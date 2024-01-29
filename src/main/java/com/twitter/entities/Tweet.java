@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.sql.Timestamp;
+import java.util.Set;
 
 @Entity
 @Data
@@ -19,7 +20,12 @@ public class Tweet {
     @Id
     @GeneratedValue
     private Long id;
-    //Here need change to User type.
+
+//    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+//    @JoinColumn(name="user_id")
+//    private Tweet author;
+
+//    //Here need change to User type.
     private Long author;
 
     @Column(nullable = false, updatable = false)
@@ -45,5 +51,13 @@ public class Tweet {
     @OneToMany(mappedBy = "repostOf", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Tweet> reposts = new ArrayList<>();
 
+    @ManyToMany
+    @JoinTable(
+            name = "tweet_hashtags",
+            joinColumns = @JoinColumn(name = "tweet_id"),
+            inverseJoinColumns = @JoinColumn(name = "hashtag_id"),
+            uniqueConstraints = @UniqueConstraint(columnNames = {"tweet_id", "hashtag_id"})
+    )
+    private Set<Hashtag> hashtags;
 
 }
