@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
+import java.sql.Timestamp;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -18,21 +18,9 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String username;
-
-    private String password;
-
-    private LocalDateTime joined;
+    private Timestamp joined;
 
     private boolean deleted;
-
-    private String firstName;
-
-    private String lastName;
-
-    private String email;
-
-    private String phone;
 
     @Embedded
     private Credentials credentials;
@@ -72,12 +60,20 @@ public class User {
 
     @Embeddable
     public class Credentials {
+        private String username;
 
+        private String password;
     }
 
     @Embeddable
     public class Profile {
+        private String firstName;
 
+        private String lastName;
+
+        private String email;
+
+        private String phone;
 
     }
 
