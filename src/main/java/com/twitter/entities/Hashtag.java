@@ -11,7 +11,7 @@ import java.util.Set;
 @Entity
 @Data
 @NoArgsConstructor
-@Table(name="hashtags")
+@Table(name="hashtag")
 public class Hashtag {
     @Id
     @GeneratedValue

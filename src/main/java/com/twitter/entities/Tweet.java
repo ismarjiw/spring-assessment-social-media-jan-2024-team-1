@@ -3,11 +3,9 @@ package com.twitter.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.sql.Timestamp;
 import java.util.Set;
@@ -15,7 +13,7 @@ import java.util.Set;
 @Entity
 @Data
 @NoArgsConstructor
-@Table(name="tweets")
+@Table(name="tweet")
 public class Tweet {
     @Id
     @GeneratedValue
@@ -23,10 +21,7 @@ public class Tweet {
 
     @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name="user_id")
-    private Tweet author;
-
-//    //Here need change to User type.
-//    private Long author;
+    private User author;
 
     @Column(nullable = false, updatable = false)
     @CreationTimestamp
