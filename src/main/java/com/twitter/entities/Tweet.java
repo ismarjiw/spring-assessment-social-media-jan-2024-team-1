@@ -21,12 +21,12 @@ public class Tweet {
     @GeneratedValue
     private Long id;
 
-//    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-//    @JoinColumn(name="user_id")
-//    private Tweet author;
+    @ManyToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name="user_id")
+    private Tweet author;
 
 //    //Here need change to User type.
-    private Long author;
+//    private Long author;
 
     @Column(nullable = false, updatable = false)
     @CreationTimestamp
