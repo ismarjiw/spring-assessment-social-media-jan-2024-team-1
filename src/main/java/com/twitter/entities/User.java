@@ -41,7 +41,7 @@ public class User {
     private Profile profile;
 
     @OneToMany(mappedBy = "author")
-    private Set<Tweet> tweets = new HashSet<>();
+    private Set<Tweet> createdTweets = new HashSet<>();
 
     @ManyToMany
     @JoinTable(
@@ -73,18 +73,11 @@ public class User {
     @Embeddable
     public class Credentials {
 
-        private String username;
-        private String password;
-
     }
 
     @Embeddable
     public class Profile {
 
-        private String firstName;
-        private String lastName;
-        private String email;
-        private String phone;
 
     }
 
