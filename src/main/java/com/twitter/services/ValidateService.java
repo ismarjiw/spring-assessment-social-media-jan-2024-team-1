@@ -1,5 +1,6 @@
 package com.twitter.services;
 
-public class ValidateService {
+
+public interface ValidateService {
 
 }
