@@ -2,8 +2,8 @@ package com.twitter.controllers.advice;
 
 import com.twitter.controllers.TweetController;
 import com.twitter.dtos.ErrorDto;
-import com.twitter.entities.NotAuthorizedException;
-import com.twitter.entities.NotFoundException;
+import com.twitter.exceptions.NotAuthorizedException;
+import com.twitter.exceptions.NotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;

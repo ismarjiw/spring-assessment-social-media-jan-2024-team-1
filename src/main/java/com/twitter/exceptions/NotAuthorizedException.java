@@ -1,4 +1,4 @@
-package com.twitter.entities;
+package com.twitter.exceptions;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
