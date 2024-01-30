@@ -1,6 +1,5 @@
 package com.twitter.dtos;
 
-import com.twitter.entities.User;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -8,8 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 public class UserRequestDto {
 
-    private User.Credentials credentials;
+    private CredentialsDto credentials;
 
-    private User.Profile profile;
+    private ProfileDto profile;
 
 }

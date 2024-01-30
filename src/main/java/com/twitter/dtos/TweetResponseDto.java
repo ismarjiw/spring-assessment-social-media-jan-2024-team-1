@@ -1,20 +1,22 @@
 package com.twitter.dtos;
 
-import com.twitter.entities.Tweet;
-import com.twitter.entities.User;
-
 import java.sql.Timestamp;
 
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor
+@Data
 public class TweetResponseDto {
     private Long id;
-    private User author;
+    private UserResponseDto author;
 
     private Timestamp posted;
 
     private String content;
 
-    private Tweet inReplyTO;
+    private TweetResponseDto inReplyTo;
 
-    private Tweet repostOf;
+    private TweetResponseDto repostOf;
 
 }

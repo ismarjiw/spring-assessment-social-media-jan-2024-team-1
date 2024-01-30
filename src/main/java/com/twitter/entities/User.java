@@ -1,82 +1,63 @@
 package com.twitter.entities;
 
-import jakarta.persistence.*;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.sql.Timestamp;
-import java.util.HashSet;
-import java.util.Set;
+import com.twitter.embeddables.Credentials;
+import com.twitter.embeddables.Profile;
+
+import jakarta.persistence.Embeddable;
+import jakarta.persistence.Embedded;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name="user_table")
 @NoArgsConstructor
 @Data
+@Table(name = "user_table")
 public class User {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue
+	private Long id;
 
-    @CreationTimestamp
-    private Timestamp joined;
+	@CreationTimestamp
+	private Timestamp joined;
 
-    private boolean deleted;
+	private boolean deleted = false;
 
-    @Embedded
-    private Credentials credentials;
+	@Embedded
+	private Credentials credentials;
 
-    @Embedded
-    private Profile profile;
+	@Embedded
+	private Profile profile;
 
-    @OneToMany(mappedBy = "author")
-    private Set<Tweet> createdTweets = new HashSet<>();
+	@OneToMany(mappedBy = "author")
+	private List<Tweet> createdTweets = new ArrayList<>();
 
-    @ManyToMany
-    @JoinTable(
-            name = "followers_following",
-            joinColumns = @JoinColumn(name = "following_id"),
-            inverseJoinColumns = @JoinColumn(name = "follower_id")
-    )
-    private Set<User> followers = new HashSet<>();
+	@ManyToMany
+	@JoinTable(name = "followers_following")
+	private List<User> followers = new ArrayList<>();
 
-    @ManyToMany(mappedBy = "followers")
-    private Set<User> following = new HashSet<>();
+	@ManyToMany(mappedBy = "followers")
+	private List<User> following = new ArrayList<>();
 
-    @ManyToMany
-    @JoinTable(
-            name = "user_likes",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "tweet_id")
-    )
-    private Set<Tweet> likedTweets = new HashSet<>();
+	@ManyToMany
+	@JoinTable(name = "user_likes", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "tweet_id"))
+	private List<Tweet> likedTweets = new ArrayList<>();
 
-    @ManyToMany
-    @JoinTable(
-            name = "user_mentions",
-            joinColumns = @JoinColumn(name = "user_id"),
-            inverseJoinColumns = @JoinColumn(name = "tweet_id")
-    )
-    private Set<Tweet> mentionedTweets = new HashSet<>();
-
-    @Embeddable
-    public class Credentials {
-        private String username;
-
-        private String password;
-    }
-
-    @Embeddable
-    public class Profile {
-        private String firstName;
-
-        private String lastName;
-
-        private String email;
-
-        private String phone;
-
-    }
+	@ManyToMany(mappedBy = "mentionedUsers")
+	private List<Tweet> mentionedTweets = new ArrayList<>();
 
 }

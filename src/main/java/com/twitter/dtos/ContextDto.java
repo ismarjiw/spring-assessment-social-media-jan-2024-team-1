@@ -1,12 +1,17 @@
 package com.twitter.dtos;
 
-import com.twitter.entities.Tweet;
-
 import java.util.List;
 
-public class ContextDto {
-    private Tweet target;
-    private List<Tweet> before;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-    private List<Tweet> after;
+@NoArgsConstructor
+@Data
+public class ContextDto {
+	
+    private TweetResponseDto target;
+    
+    private List<TweetResponseDto> before;
+
+    private List<TweetResponseDto> after;
 }

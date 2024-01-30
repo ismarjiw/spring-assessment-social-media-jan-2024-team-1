@@ -25,3 +25,5 @@ nbdist/
 
 HELP.md
 .DS_Store
+
+application.properties
