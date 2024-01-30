@@ -70,32 +70,32 @@ public class TweetServiceImpl implements TweetService {
     }
 
     @Override
-    public TweetResponseDto getTagsByTweetId(Long id) {
+    public List<TweetResponseDto> getTagsByTweetId(Long id) {
         return null;
     }
 
     @Override
-    public TweetResponseDto getLikesByTweetId(Long id) {
+    public List<TweetResponseDto> getLikesByTweetId(Long id) {
         return null;
     }
 
     @Override
-    public TweetResponseDto getContentByTweetId(Long id) {
+    public List<TweetResponseDto> getContentByTweetId(Long id) {
         return null;
     }
 
     @Override
-    public TweetResponseDto getRepliesByTweetId(Long id) {
+    public List<TweetResponseDto> getRepliesByTweetId(Long id) {
         return null;
     }
 
     @Override
-    public TweetResponseDto getRepostsByTweetId(Long id) {
+    public List<TweetResponseDto> getRepostsByTweetId(Long id) {
         return null;
     }
 
     @Override
-    public TweetResponseDto getMentionsByTweetId(Long id) {
+    public List<TweetResponseDto> getMentionsByTweetId(Long id) {
         return null;
     }
 }
