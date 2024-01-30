@@ -4,9 +4,9 @@ import com.twitter.entities.Tweet;
 
 import java.util.List;
 
-public class contextDto {
+public class ContextDto {
     private Tweet target;
-    private List<TweetResponseDto> before;
+    private List<Tweet> before;
 
-    private List<TweetResponseDto> after;
+    private List<Tweet> after;
 }
