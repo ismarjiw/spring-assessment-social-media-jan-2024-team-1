@@ -1,14 +1,19 @@
 package com.twitter.services.impl;
 
+import com.twitter.dtos.TweetResponseDto;
 import com.twitter.entities.Tweet;
 import com.twitter.entities.User;
+import com.twitter.mappers.HashtagMapper;
 import com.twitter.mappers.TweetMapper;
+import com.twitter.mappers.UserMapper;
 import com.twitter.repositories.HashtagRepository;
 import com.twitter.repositories.TweetRepository;
 import com.twitter.repositories.UserRepository;
 import com.twitter.services.TweetService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor

@@ -3,5 +3,5 @@ package com.twitter.mappers;
 import org.mapstruct.Mapper;
 
 @Mapper(componentModel="spring")
-public class CredentialsMapper {
+public interface CredentialsMapper {
 }
