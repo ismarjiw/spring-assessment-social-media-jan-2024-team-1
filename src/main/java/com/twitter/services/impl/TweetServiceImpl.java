@@ -1,5 +1,6 @@
 package com.twitter.services.impl;
 
+import com.twitter.dtos.TweetRequestDto;
 import com.twitter.dtos.TweetResponseDto;
 import com.twitter.entities.Tweet;
 import com.twitter.entities.User;
@@ -30,13 +31,15 @@ public class TweetServiceImpl implements TweetService {
 
     @Override
     public List<TweetResponseDto> getAllTweets() {
-        return tweetMapper.entitiesToDtos(tweetRepository.findAll());
+
+//        return tweetMapper.entitiesToDtos(tweetRepository.findAll());
+        return null;
     }
 
     @Override
     public TweetResponseDto createTweet(TweetRequestDto tweetRequestDto) {
-        Tweet tweetToSave = tweetMapper.requestDtoToEntity(tweetRequestDto);
-        Tweet savedTweet = tweetRepository.saveAndFlush(tweetToSave);
+//        Tweet tweetToSave = tweetMapper.requestDtoToEntity(tweetRequestDto);
+//        Tweet savedTweet = tweetRepository.saveAndFlush(tweetToSave);
 
         return null;
     }
@@ -57,7 +60,7 @@ public class TweetServiceImpl implements TweetService {
     }
 
     @Override
-    public TweetResposneDto replyToTweetById(Long id, Tweet tweet) {
+    public TweetResponseDto replyToTweetById(Long id, Tweet tweet) {
         return null;
     }
 
@@ -67,32 +70,32 @@ public class TweetServiceImpl implements TweetService {
     }
 
     @Override
-    public TweetResposneDto getTagsByTweetId(Long id) {
+    public TweetResponseDto getTagsByTweetId(Long id) {
         return null;
     }
 
     @Override
-    public TweetResposneDto getLikesByTweetId(Long id) {
+    public TweetResponseDto getLikesByTweetId(Long id) {
         return null;
     }
 
     @Override
-    public TweetResposneDto getContentByTweetId(Long id) {
+    public TweetResponseDto getContentByTweetId(Long id) {
         return null;
     }
 
     @Override
-    public TweetResposneDto getRepliesByTweetId(Long id) {
+    public TweetResponseDto getRepliesByTweetId(Long id) {
         return null;
     }
 
     @Override
-    public TweetResposneDto getRepostsByTweetId(Long id) {
+    public TweetResponseDto getRepostsByTweetId(Long id) {
         return null;
     }
 
     @Override
-    public TweetResposneDto getMentionsByTweetId(Long id) {
+    public TweetResponseDto getMentionsByTweetId(Long id) {
         return null;
     }
 }

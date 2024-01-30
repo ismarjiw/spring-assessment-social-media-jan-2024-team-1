@@ -23,15 +23,15 @@ public interface TweetService {
 
     TweetResponseDto repostTweetById(Long id, Tweet tweet);
 
-    TweetResposneDto getTagsByTweetId(Long id);
+    TweetResponseDto getTagsByTweetId(Long id);
 
-    TweetResposneDto getLikesByTweetId(Long id);
+    TweetResponseDto getLikesByTweetId(Long id);
 
-    TweetResposneDto getContentByTweetId(Long id);
+    TweetResponseDto getContentByTweetId(Long id);
 
-    TweetResposneDto getRepliesByTweetId(Long id);
+    TweetResponseDto getRepliesByTweetId(Long id);
 
-    TweetResposneDto getRepostsByTweetId(Long id);
+    TweetResponseDto getRepostsByTweetId(Long id);
 
-    TweetResposneDto getMentionsByTweetId(Long id);
+    TweetResponseDto getMentionsByTweetId(Long id);
 }
