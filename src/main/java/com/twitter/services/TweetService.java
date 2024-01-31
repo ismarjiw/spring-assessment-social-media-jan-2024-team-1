@@ -1,10 +1,10 @@
 package com.twitter.services;
 
-import com.twitter.dtos.TweetRequestDto;
-import com.twitter.dtos.TweetResponseDto;
+import com.twitter.dtos.*;
 import com.twitter.entities.Tweet;
 import com.twitter.entities.User;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public interface TweetService {
@@ -23,11 +23,21 @@ public interface TweetService {
 
     TweetResponseDto repostTweetById(Long id, Tweet tweet);
 
-    List<TweetResponseDto> getTagsByTweetId(Long id);
+    List<HashtagDto> getTagsByTweetId(Long id);
 
-    List<TweetResponseDto> getLikesByTweetId(Long id);
+    List<UserResponseDto> getLikesByTweetId(Long id);
 
-    List<TweetResponseDto> getContentByTweetId(Long id);
+    ContextDto getContextByTweetId(Long id);
+
+    List<Tweet> getBeforeChain(Tweet tweet);
+
+    List<Tweet> getAfterChain(Tweet tweet);
+
+    List<TweetResponseDto> getRepliesBeforeChain(Tweet tweet, List<Tweet> chain);
+
+    List<TweetResponseDto> getRepliesAfterChain(Tweet tweet, List<Tweet> chain);
+
+    List<Tweet> flattenReplies(List<Tweet> tweets, Tweet targetTweet);
 
     List<TweetResponseDto> getRepliesByTweetId(Long id);
 
