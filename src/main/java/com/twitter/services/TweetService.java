@@ -1,6 +1,7 @@
 package com.twitter.services;
 
 import com.twitter.dtos.*;
+import com.twitter.embeddables.Credentials;
 import com.twitter.entities.Tweet;
 import com.twitter.entities.User;
 
@@ -17,7 +18,7 @@ public interface TweetService {
 
     TweetResponseDto getTweetById(Long id);
 
-    TweetResponseDto likeTweetById(Long id, User user);
+    void likeTweetById(Long id, CredentialsDto credentialsDto);
 
     TweetResponseDto replyToTweetById(Long id, Tweet tweet);
 

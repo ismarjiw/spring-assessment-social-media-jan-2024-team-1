@@ -76,4 +76,18 @@ public class TweetController {
     ) {
         return tweetService.createTweet(tweetRequestDto);
     }
+
+    @PostMapping("/{id}/like")
+    public void likeTweet(
+            @PathVariable Long id,
+            @RequestBody CredentialsDto credentialsDto
+    ) {
+        tweetService.likeTweetById(id, credentialsDto);
+    }
+
+
+
+//    @PostMapping("/{id}/repost")
+//    @PostMapping("/{id}/reply")
+//    @DeleteMapping("/{id}/like")
 }

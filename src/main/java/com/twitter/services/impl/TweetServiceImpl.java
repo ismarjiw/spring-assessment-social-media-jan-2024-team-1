@@ -95,9 +95,33 @@ public class TweetServiceImpl implements TweetService {
     }
 
     @Override
-    public TweetResponseDto likeTweetById(Long id, User user) {
+    public void likeTweetById(Long id, CredentialsDto credentialsDto) {
 
-        return null;
+        Optional<Tweet> optionalTweet = tweetRepository.findById(id);
+        Credentials credentials = credentialsMapper.dtoToEntity(credentialsDto);
+        Optional<User> optionalUser = userRepository.findByCredentials(credentials);
+        // com.twitter.exceptions.NotFoundException: User not found
+        try {
+            if (optionalUser.isPresent() && optionalTweet.isPresent()) {
+                User user = optionalUser.get();
+                Tweet selectedTweet = optionalTweet.get();
+
+                if (!user.getLikedTweets().contains(selectedTweet)) {
+                    user.getLikedTweets().add(selectedTweet);
+                    userRepository.saveAndFlush(user);
+                }
+            } else {
+                if (!optionalUser.isPresent()) {
+                    throw new NotFoundException("User not found");
+                }
+                if (!optionalTweet.isPresent()) {
+                    throw new NotFoundException("Tweet not found");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BadRequestException(BAD_REQUEST_MSG);
+        }
     }
 
     @Override
