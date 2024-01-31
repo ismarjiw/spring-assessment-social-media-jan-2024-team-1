@@ -1,6 +1,7 @@
 package com.twitter.services;
 
 import com.twitter.dtos.CredentialsDto;
+import com.twitter.dtos.TweetResponseDto;
 import com.twitter.dtos.UserRequestDto;
 import com.twitter.dtos.UserResponseDto;
 
@@ -25,4 +26,10 @@ public interface UserService {
     void createFollowRelationship(String username, CredentialsDto credentialsDto);
 
     void removeFollowRelationship(String username, CredentialsDto credentialsDto);
+
+    List<TweetResponseDto> getAllTweets(String username);
+
+    List<TweetResponseDto> getAllFeed(String username);
+
+    List<TweetResponseDto> getAllMentions(String username);
 }

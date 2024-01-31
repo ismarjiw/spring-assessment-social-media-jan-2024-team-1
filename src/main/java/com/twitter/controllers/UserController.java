@@ -1,6 +1,7 @@
 package com.twitter.controllers;
 
 import com.twitter.dtos.CredentialsDto;
+import com.twitter.dtos.TweetResponseDto;
 import com.twitter.dtos.UserRequestDto;
 import com.twitter.dtos.UserResponseDto;
 import com.twitter.services.UserService;
@@ -57,6 +58,19 @@ public class UserController {
     @PostMapping("/@{username}/unfollow")
     public void removeFollowRelationship(@PathVariable String username, @RequestBody CredentialsDto credentialsDto){
         userService.removeFollowRelationship(username,credentialsDto);
+    }
+
+    @GetMapping("/@{username}/tweets")
+    public List<TweetResponseDto> getAllTweets(@PathVariable String username){
+        return userService.getAllTweets(username);
+    }
+    @GetMapping("/@{username}/feed")
+    public List<TweetResponseDto> getAllFeed(@PathVariable String username){
+        return userService.getAllFeed(username);
+    }
+    @GetMapping("/@{username}/mentions")
+    public List<TweetResponseDto> getAllMentions(@PathVariable String username){
+        return userService.getAllMentions(username);
     }
 }
 

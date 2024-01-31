@@ -1,15 +1,18 @@
 package com.twitter.services.impl;
 
 import com.twitter.dtos.CredentialsDto;
+import com.twitter.dtos.TweetResponseDto;
 import com.twitter.dtos.UserRequestDto;
 import com.twitter.dtos.UserResponseDto;
 import com.twitter.embeddables.Credentials;
 import com.twitter.embeddables.Profile;
+import com.twitter.entities.Tweet;
 import com.twitter.entities.User;
 import com.twitter.exceptions.BadRequestException;
 import com.twitter.exceptions.NotAuthorizedException;
 import com.twitter.exceptions.NotFoundException;
 import com.twitter.mappers.ProfileMapper;
+import com.twitter.mappers.TweetMapper;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +23,7 @@ import com.twitter.services.UserService;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -29,7 +33,7 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final ProfileMapper profileMapper;
     private final CredentialsMapper credentialsMapper;
-
+private final TweetMapper tweetMapper;
     @Override
     public List<UserResponseDto> getAllUsersNonDeleted() {
 
@@ -176,6 +180,41 @@ public class UserServiceImpl implements UserService {
             user.getFollowers().remove(user2);
             userRepository.saveAndFlush(user);
         }
+    }
+
+    @Override
+    public List<TweetResponseDto> getAllTweets(String username) {
+        User user = userRepository.findByCredentialsUsername(username);
+        if (user == null || user.isDeleted()) {
+            throw new NotFoundException("Not found user with username: " + username);
+
+
+        }
+        return tweetMapper.entitiesToDtos(user.getCreatedTweets());
+    }
+    @Override
+    public List<TweetResponseDto> getAllFeed(String username) {
+
+        List<Tweet> resultArray = new ArrayList<>();
+        User user = userRepository.findByCredentialsUsername(username);
+        if (user == null || user.isDeleted()) {
+            throw new NotFoundException("Not found user with username: " + username);
+        }
+        resultArray.addAll(user.getCreatedTweets());
+        for (User u : user.getFollowing()) {
+            if (!user.isDeleted()) {
+                resultArray.addAll(user.getCreatedTweets());
+            }
+        }
+        return tweetMapper.entitiesToDtos(resultArray);
+    }
+    @Override
+    public List<TweetResponseDto> getAllMentions(String username) {
+        User user = userRepository.findByCredentialsUsername(username);
+        if (user == null || user.isDeleted()) {
+            throw new NotFoundException("Not found user with username: " + username);
+        }
+        return tweetMapper.entitiesToDtos(user.getMentionedTweets());
     }
 
 
