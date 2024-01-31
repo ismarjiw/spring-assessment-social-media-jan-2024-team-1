@@ -27,5 +27,10 @@ public class UserController {
         System.out.print("testing2123e4");
         return userService.createUser(userrequestDto);
     }
+
+    @PatchMapping("/@{username}")
+    public UserResponseDto updateUser(@PathVariable String username, @RequestBody UserRequestDto userRequestDto){
+        return userService.updateUser(username, userRequestDto);
+    }
 }
 
