@@ -161,5 +161,22 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public void removeFollowRelationship(String username, CredentialsDto credentialsDto) {
+        User user=userRepository.findByCredentialsUsername(username);
+        User user2 =userRepository.findByCredentialsUsernameAndCredentialsPassword(credentialsDto.getUsername(),credentialsDto.getPassword());
+        if (user==null|| user.isDeleted()) {
+            throw new NotFoundException("Not found user with username: "+username);
+        }else if(user2==null){
+            throw new NotAuthorizedException("Not authorized");
+
+        } else if (!user.getFollowers().contains(user2)) {
+            throw new BadRequestException("You are not following this account");
+        }else {
+            user.getFollowers().remove(user2);
+            userRepository.saveAndFlush(user);
+        }
+    }
+
 
 }

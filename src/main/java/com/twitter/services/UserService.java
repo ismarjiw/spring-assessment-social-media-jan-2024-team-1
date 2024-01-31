@@ -23,4 +23,6 @@ public interface UserService {
     List<UserResponseDto> getAllFollowers(String username);
 
     void createFollowRelationship(String username, CredentialsDto credentialsDto);
+
+    void removeFollowRelationship(String username, CredentialsDto credentialsDto);
 }

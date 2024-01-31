@@ -52,5 +52,11 @@ public class UserController {
     public void createFollowRelationship(@PathVariable String username, @RequestBody CredentialsDto credentialsDto){
         userService.createFollowRelationship(username,credentialsDto);
     }
+
+
+    @PostMapping("/@{username}/unfollow")
+    public void removeFollowRelationship(@PathVariable String username, @RequestBody CredentialsDto credentialsDto){
+        userService.removeFollowRelationship(username,credentialsDto);
+    }
 }
 
