@@ -9,4 +9,6 @@ public interface UserService {
     List<UserResponseDto> getAllUsersNonDeleted();
 
     UserResponseDto getUserByUsername(String username);
+
+    UserResponseDto createUser(UserRequestDto userRequestDto);
 }

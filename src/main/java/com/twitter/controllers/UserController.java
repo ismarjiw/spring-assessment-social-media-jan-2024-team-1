@@ -22,7 +22,10 @@ public class UserController {
     public UserResponseDto getUserByUsername(@PathVariable String username){
         return userService.getUserByUsername(username);
     }
-//    @PostMapping
-//    public UserResponseDto createUser(){}
+    @PostMapping
+    public UserResponseDto createUser(@RequestBody UserRequestDto userrequestDto){
+        System.out.print("testing2123e4");
+        return userService.createUser(userrequestDto);
+    }
 }
 
