@@ -1,5 +1,6 @@
 package com.twitter.services;
 
+import com.twitter.dtos.CredentialsDto;
 import com.twitter.dtos.UserRequestDto;
 import com.twitter.dtos.UserResponseDto;
 
@@ -13,4 +14,8 @@ public interface UserService {
     UserResponseDto createUser(UserRequestDto userRequestDto);
 
     UserResponseDto updateUser(String usernamem, UserRequestDto userRequestDto);
+
+    UserResponseDto deleteUser(String username, CredentialsDto credentialsDto);
+
+
 }

@@ -1,5 +1,6 @@
 package com.twitter.controllers;
 
+import com.twitter.dtos.CredentialsDto;
 import com.twitter.dtos.UserRequestDto;
 import com.twitter.dtos.UserResponseDto;
 import com.twitter.services.UserService;
@@ -31,6 +32,12 @@ public class UserController {
     @PatchMapping("/@{username}")
     public UserResponseDto updateUser(@PathVariable String username, @RequestBody UserRequestDto userRequestDto){
         return userService.updateUser(username, userRequestDto);
+    }
+
+
+    @DeleteMapping("/@{username}")
+    public UserResponseDto deleteUser(@PathVariable String username, @RequestBody CredentialsDto credentialsDto){
+        return userService.deleteUser(username,credentialsDto);
     }
 }
 

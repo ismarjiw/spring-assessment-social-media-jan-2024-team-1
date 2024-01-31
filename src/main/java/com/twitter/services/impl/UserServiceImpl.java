@@ -14,18 +14,13 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
 import com.twitter.mappers.CredentialsMapper;
-import com.twitter.mappers.TweetMapper;
 import com.twitter.mappers.UserMapper;
-import com.twitter.repositories.TweetRepository;
 import com.twitter.repositories.UserRepository;
 import com.twitter.services.UserService;
-import com.twitter.services.ValidateService;
 
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -85,7 +80,7 @@ public class UserServiceImpl implements UserService {
         User user = userRepository.findByCredentialsUsername(username);
         if (user == null) {
             throw new NotFoundException("Not found user with username: " + username);
-        } else if (!user.getCredentials().getUsername().equals(username)) {
+        } else if (!user.getCredentials().getUsername().equals(username) || !user.getCredentials().getPassword().equals(credentials.getPassword())) {
             throw new NotAuthorizedException("Credentials not vaild");
         }
         if(userRequestDto.getProfile()==null){
@@ -112,5 +107,22 @@ public class UserServiceImpl implements UserService {
 
         return userMapper.entityToDto(user);
 
+    }
+
+    @Override
+    public UserResponseDto deleteUser(String username, CredentialsDto credentialsDto){
+        if (credentialsDto == null || credentialsDto.getUsername() == null || credentialsDto.getPassword() == null) {
+            throw new BadRequestException("Credentials cannot be null.");
+        }
+
+        User user = userRepository.findByCredentialsUsername(username);
+        if (user == null) {
+            throw new NotFoundException("Not found user with username: " + username);
+        } else if (!user.getCredentials().getUsername().equals(username)|| !user.getCredentials().getPassword().equals(credentialsDto.getPassword())) {
+            throw new NotAuthorizedException("Credentials not vaild");
+        }
+        user.setDeleted(true);
+        userRepository.saveAndFlush(user);
+        return userMapper.entityToDto(user);
     }
 }
