@@ -130,11 +130,11 @@ public class TweetServiceImpl implements TweetService {
         if (optionalTweet.isPresent()) {
             Tweet selectedTweet = optionalTweet.get();
 
-            // Get the before and after chains
+            // Get the before and after chains in chronological order
             List<Tweet> beforeChain = getBeforeChain(selectedTweet);
             List<Tweet> afterChain = getAfterChain(selectedTweet);
 
-            // Flatten the afterChain -> need to capture nested replies in chronological order
+            // Flatten the afterChain -> need to get nested replies
             List<Tweet> flattenedAfterChain = flattenReplies(afterChain, selectedTweet);
 
             // Map the chains to DTOs
@@ -181,6 +181,11 @@ public class TweetServiceImpl implements TweetService {
                 chain = new ArrayList<>();
             }
             chain.add(tweet);
+
+            Tweet previousTweet = tweet.getInReplyTo();
+            if (previousTweet != null) {
+                getRepliesBeforeChain(previousTweet, chain);
+            }
         }
         return tweetMapper.entitiesToDtos(chain);
     }
@@ -211,16 +216,52 @@ public class TweetServiceImpl implements TweetService {
 
     @Override
     public List<TweetResponseDto> getRepliesByTweetId(Long id) {
-        return null;
+        Optional<Tweet> optionalTweet = tweetRepository.findById(id);
+
+        try {
+            if (optionalTweet.isPresent()) {
+                Tweet selectedTweet = optionalTweet.get();
+                List<Tweet> replies = selectedTweet.getReplies();
+                return tweetMapper.entitiesToDtos(replies);
+            } else {
+                throw new NotFoundException(TWEET_NOT_FOUND_MSG + id);
+            }
+        } catch (Exception e) {
+            throw new BadRequestException(BAD_REQUEST_MSG);
+        }
     }
 
     @Override
     public List<TweetResponseDto> getRepostsByTweetId(Long id) {
-        return null;
+        Optional<Tweet> optionalTweet = tweetRepository.findById(id);
+
+        try {
+            if (optionalTweet.isPresent()) {
+                Tweet selectedTweet = optionalTweet.get();
+                List<Tweet> reposts = selectedTweet.getReposts();
+                return tweetMapper.entitiesToDtos(reposts);
+            } else {
+                throw new NotFoundException(TWEET_NOT_FOUND_MSG + id);
+            }
+        } catch (Exception e) {
+            throw new BadRequestException(BAD_REQUEST_MSG);
+        }
     }
 
     @Override
-    public List<TweetResponseDto> getMentionsByTweetId(Long id) {
-        return null;
+    public List<UserResponseDto> getMentionsByTweetId(Long id) {
+        Optional<Tweet> optionalTweet = tweetRepository.findById(id);
+
+        try {
+            if (optionalTweet.isPresent()) {
+                Tweet selectedTweet = optionalTweet.get();
+                List<User> mentionedUsers = selectedTweet.getMentionedUsers();
+                return userMapper.entitiesToDtos(mentionedUsers);
+            } else {
+                throw new NotFoundException(TWEET_NOT_FOUND_MSG + id);
+            }
+        } catch (Exception e) {
+            throw new BadRequestException(BAD_REQUEST_MSG);
+        }
     }
 }
