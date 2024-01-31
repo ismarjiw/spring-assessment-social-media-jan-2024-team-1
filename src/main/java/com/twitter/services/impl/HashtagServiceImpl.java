@@ -4,6 +4,7 @@ import com.twitter.dtos.HashtagDto;
 import com.twitter.dtos.TweetResponseDto;
 import com.twitter.entities.Hashtag;
 import com.twitter.entities.Tweet;
+import com.twitter.exceptions.NotFoundException;
 import com.twitter.mappers.TweetMapper;
 import org.springframework.stereotype.Service;
 
@@ -37,7 +38,10 @@ public HashtagDto getRandomTag(){
     @Override
     public List<TweetResponseDto> getTagLabel(String label) {
     Hashtag tag = hashtagRepository.findByLabel(label);
-    List<Tweet> tweetsWithTag = tweetRepository.findByhashtag_id(tag.getId());
+    if (tag==null){
+        throw new NotFoundException("Not found tag with label: "+label);
+    }
+    List<Tweet> tweetsWithTag = tag.getTweets();
     return tweetMapper.entitiesToDtos(tweetsWithTag);
     }
 }

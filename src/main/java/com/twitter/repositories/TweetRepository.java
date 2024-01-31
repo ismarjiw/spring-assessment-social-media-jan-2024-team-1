@@ -9,5 +9,5 @@ import java.util.List;
 @Repository
 public interface TweetRepository extends JpaRepository<Tweet,Long> {
 
-    List<Tweet> findByhashtag_id(Long id);
+
 }
