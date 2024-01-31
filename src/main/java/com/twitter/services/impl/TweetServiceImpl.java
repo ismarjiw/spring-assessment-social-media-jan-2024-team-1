@@ -112,7 +112,14 @@ public class TweetServiceImpl implements TweetService {
         try {
             if (optionalTweet.isPresent()) {
                 Tweet selectedTweet = optionalTweet.get();
-                List<User> userLikes = selectedTweet.getLikedByUsers();
+
+                List<User> userLikes = new ArrayList<>();
+                for (User u: selectedTweet.getLikedByUsers()) {
+                    if (!u.isDeleted()) {
+                        userLikes.add(u);
+                    }
+                }
+
                 return userMapper.entitiesToDtos(userLikes);
             } else {
                 throw new NotFoundException(TAGS_NOT_FOUND_MSG + id);
