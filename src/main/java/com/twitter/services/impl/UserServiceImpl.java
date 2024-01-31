@@ -125,4 +125,41 @@ public class UserServiceImpl implements UserService {
         userRepository.saveAndFlush(user);
         return userMapper.entityToDto(user);
     }
+
+
+    @Override
+    public List<UserResponseDto> getAllFollowings(String username){
+        User user = userRepository.findByCredentialsUsername(username);
+        if (user == null) {
+            throw new NotFoundException("Not found user with username: " + username);
+        }
+        return userMapper.entitiesToDtos(user.getFollowing());
+    }
+    @Override
+    public List<UserResponseDto> getAllFollowers(String username){
+        User user = userRepository.findByCredentialsUsername(username);
+        if (user == null) {
+            throw new NotFoundException("Not found user with username: " + username);
+        }
+        return userMapper.entitiesToDtos(user.getFollowers());
+    }
+
+    @Override
+    public void createFollowRelationship(String username, CredentialsDto credentialsDto) {
+        User user=userRepository.findByCredentialsUsername(username);
+        User user2 =userRepository.findByCredentialsUsernameAndCredentialsPassword(credentialsDto.getUsername(),credentialsDto.getPassword());
+        if (user==null|| user.isDeleted()) {
+            throw new NotFoundException("Not found user with username: "+username);
+        }else if(user2==null){
+            throw new NotAuthorizedException("Not authorized");
+
+        } else if (user.getFollowers().contains(user2)) {
+            throw new BadRequestException("You already followed this account");
+        }else {
+            user.getFollowers().add(user2);
+            userRepository.saveAndFlush(user);
+        }
+    }
+
+
 }

@@ -39,5 +39,18 @@ public class UserController {
     public UserResponseDto deleteUser(@PathVariable String username, @RequestBody CredentialsDto credentialsDto){
         return userService.deleteUser(username,credentialsDto);
     }
+    @GetMapping("/@{username}/following")
+    public List<UserResponseDto> getAllFollowings(@PathVariable String username){
+        return userService.getAllFollowings(username);
+    }
+    @GetMapping("/@{username}/followers")
+    public List<UserResponseDto> getAllFollowers(@PathVariable String username){
+        return userService.getAllFollowers(username);
+    }
+
+    @PostMapping("/@{username}/follow")
+    public void createFollowRelationship(@PathVariable String username, @RequestBody CredentialsDto credentialsDto){
+        userService.createFollowRelationship(username,credentialsDto);
+    }
 }
 
