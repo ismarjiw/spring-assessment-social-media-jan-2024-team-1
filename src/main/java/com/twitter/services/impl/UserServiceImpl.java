@@ -1,5 +1,9 @@
 package com.twitter.services.impl;
 
+import com.twitter.dtos.UserRequestDto;
+import com.twitter.dtos.UserResponseDto;
+import com.twitter.entities.User;
+import com.twitter.exceptions.NotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.twitter.mappers.CredentialsMapper;
@@ -12,13 +16,24 @@ import com.twitter.services.ValidateService;
 
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 	private final UserRepository userRepository;
 	private final UserMapper userMapper;
-	private final CredentialsMapper credentialsMapper;
-	private final TweetMapper tweetMapper;
-	private final TweetRepository tweetRepository;
-	private final ValidateService validateService;
+
+	public List<UserResponseDto> getAllUsersNonDeleted(){
+
+		return userMapper.entitiesToDtos(userRepository.findByDeleted(false));
+	}
+	public UserResponseDto getUserByUsername(String username){
+		User user=userRepository.findByCredentialsUsername(username);
+		if (user==null){
+			throw new NotFoundException("The user you are looking for does not exist with username: "+username);
+		}
+		return userMapper.entityToDto(user);
+	}
 }
