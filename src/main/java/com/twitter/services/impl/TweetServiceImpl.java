@@ -1,11 +1,14 @@
 package com.twitter.services.impl;
 
 import com.twitter.dtos.*;
+import com.twitter.embeddables.Credentials;
 import com.twitter.entities.Hashtag;
 import com.twitter.entities.Tweet;
 import com.twitter.entities.User;
 import com.twitter.exceptions.BadRequestException;
+import com.twitter.exceptions.NotAuthorizedException;
 import com.twitter.exceptions.NotFoundException;
+import com.twitter.mappers.CredentialsMapper;
 import com.twitter.mappers.HashtagMapper;
 import com.twitter.mappers.TweetMapper;
 import com.twitter.mappers.UserMapper;
@@ -23,6 +26,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class TweetServiceImpl implements TweetService {
 
+
     private final TweetMapper tweetMapper;
     private final TweetRepository tweetRepository;
 
@@ -32,9 +36,12 @@ public class TweetServiceImpl implements TweetService {
     private final HashtagMapper hashtagMapper;
     private final HashtagRepository hashtagRepository;
 
-    String TWEET_NOT_FOUND_MSG = "Tweet not found with ID: ";
-    String BAD_REQUEST_MSG = "Error while processing the request ";
-    String TAGS_NOT_FOUND_MSG = "Tags not found with ID: ";
+    private final CredentialsMapper credentialsMapper;
+
+    private static final String TWEET_NOT_FOUND_MSG = "Tweet not found with ID: ";
+    private static final String BAD_REQUEST_MSG = "Error while processing the request ";
+    private static final String TAGS_NOT_FOUND_MSG = "Tags not found with ID: ";
+    private static final String USER_NOT_FOUND_MSG = "User not found in the database";
 
     @Override
     public List<TweetResponseDto> getAllTweets() {
@@ -45,7 +52,24 @@ public class TweetServiceImpl implements TweetService {
     @Override
     public TweetResponseDto createTweet(TweetRequestDto tweetRequestDto) {
 
-        return null;
+        Credentials credentials = credentialsMapper.dtoToEntity(tweetRequestDto.getCredentials());
+        Optional<User> optionalUser = userRepository.findByCredentials(credentials);
+
+        try {
+            if (optionalUser.isPresent()) {
+                User author = optionalUser.get();
+                Tweet tweetToSave = tweetMapper.requestDtoToEntity(tweetRequestDto);
+                tweetToSave.setAuthor(author);
+
+                Tweet savedTweet = tweetRepository.saveAndFlush(tweetToSave);
+
+                return tweetMapper.entityToDto(savedTweet);
+            } else {
+                throw new NotFoundException(USER_NOT_FOUND_MSG);
+            }
+        } catch (Exception e) {
+            throw new BadRequestException(BAD_REQUEST_MSG);
+        }
     }
 
     @Override

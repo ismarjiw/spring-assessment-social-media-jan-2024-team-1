@@ -10,7 +10,7 @@ import java.util.List;
 @Mapper(componentModel="spring", uses = {UserMapper.class})
 public interface TweetMapper {
 
-    TweetResponseDto requestDtoToEntity(TweetRequestDto tweetRequestDto);
+    Tweet requestDtoToEntity(TweetRequestDto tweetRequestDto);
     TweetResponseDto entityToDto(Tweet entity);
     List<TweetResponseDto> entitiesToDtos(List<Tweet> entities);
 }
