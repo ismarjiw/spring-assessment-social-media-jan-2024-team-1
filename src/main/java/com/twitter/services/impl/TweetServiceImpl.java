@@ -142,7 +142,7 @@ public class TweetServiceImpl implements TweetService {
         Credentials credentials = credentialsMapper.dtoToEntity(credentialsDto);
         Optional<User> optionalUser = userRepository.findByCredentials(credentials);
 
-        if (!tweetToDelete.isPresent()) {
+        if (!tweetToDelete.isPresent() || tweetToDelete.get().isDeleted()) {
             throw new NotFoundException("Tweet not found");
         }
 
