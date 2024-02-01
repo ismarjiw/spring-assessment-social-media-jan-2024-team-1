@@ -86,8 +86,26 @@ public class TweetController {
     }
 
 
+    @PostMapping("/{id}/repost")
+    public TweetResponseDto repostTweet(
+            @PathVariable Long id,
+            @RequestBody CredentialsDto credentialsDto
+    ) {
+        return tweetService.repostTweetById(id, credentialsDto);
+    }
 
-//    @PostMapping("/{id}/repost")
-//    @PostMapping("/{id}/reply")
-//    @DeleteMapping("/{id}/like")
+    @PostMapping("/{id}/reply")
+    public TweetResponseDto replyToTweet(
+            @PathVariable Long id,
+            @RequestBody TweetRequestDto tweetRequestDto
+    ) {
+        return tweetService.replyToTweetById(id, tweetRequestDto);
+    }
+    @DeleteMapping("/{id}")
+    public TweetResponseDto deleteTweet(
+            @PathVariable Long id,
+            @RequestBody CredentialsDto credentialsDto
+    ) {
+        return tweetService.deleteTweetById(id, credentialsDto);
+    }
 }

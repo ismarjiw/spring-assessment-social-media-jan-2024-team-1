@@ -6,7 +6,6 @@ import com.twitter.entities.Hashtag;
 import com.twitter.entities.Tweet;
 import com.twitter.entities.User;
 import com.twitter.exceptions.BadRequestException;
-import com.twitter.exceptions.NotAuthorizedException;
 import com.twitter.exceptions.NotFoundException;
 import com.twitter.mappers.CredentialsMapper;
 import com.twitter.mappers.HashtagMapper;
@@ -19,8 +18,10 @@ import com.twitter.services.TweetService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -34,7 +35,6 @@ public class TweetServiceImpl implements TweetService {
     private final UserRepository userRepository;
 
     private final HashtagMapper hashtagMapper;
-    private final HashtagRepository hashtagRepository;
 
     private final CredentialsMapper credentialsMapper;
 
@@ -73,7 +73,39 @@ public class TweetServiceImpl implements TweetService {
     }
 
     @Override
-    public TweetResponseDto deleteTweetById(Long id) {
+    public TweetResponseDto deleteTweetById(Long id, CredentialsDto credentialsDto) {
+        Optional<Tweet> tweetToDelete = tweetRepository.findById(id);
+        Credentials credentials = credentialsMapper.dtoToEntity(credentialsDto);
+        System.out.println("*********************");
+        System.out.println(credentials); // Credentials(username=null, password=null)
+        System.out.println("*********************");
+        Optional<User> optionalUser = userRepository.findByCredentials(credentials);
+
+//        com.twitter.exceptions.NotFoundException: User not found
+        try {
+            if (tweetToDelete.isPresent() && optionalUser.isPresent()) {
+                Tweet deletedTweet = tweetToDelete.get();
+                Long authorOfTweetById = tweetToDelete.get().getAuthor().getId();
+                User currentUser = optionalUser.get();
+
+                if (authorOfTweetById.equals(currentUser.getId())) {
+                    deletedTweet.setDeleted(true);
+                    tweetRepository.saveAndFlush(deletedTweet);
+                }
+
+                return tweetMapper.entityToDto(deletedTweet);
+            } else {
+                if (!optionalUser.isPresent()) {
+                    throw new NotFoundException("User not found");
+                }
+                if (!tweetToDelete.isPresent()) {
+                    throw new NotFoundException("Tweet not found");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BadRequestException("Error deleting tweet");
+        }
         return null;
     }
 
@@ -125,12 +157,40 @@ public class TweetServiceImpl implements TweetService {
     }
 
     @Override
-    public TweetResponseDto replyToTweetById(Long id, Tweet tweet) {
+    public TweetResponseDto replyToTweetById(Long id, TweetRequestDto tweetRequestDto) {
         return null;
     }
 
     @Override
-    public TweetResponseDto repostTweetById(Long id, Tweet tweet) {
+    public TweetResponseDto repostTweetById(Long id, CredentialsDto credentialsDto) {
+        Optional<Tweet> optionalTweet = tweetRepository.findById(id);
+        Credentials credentials = credentialsMapper.dtoToEntity(credentialsDto);
+        Optional<User> optionalUser = userRepository.findByCredentials(credentials);
+        // com.twitter.exceptions.NotFoundException: User not found
+        try {
+            if (optionalUser.isPresent() && optionalTweet.isPresent()) {
+                User user = optionalUser.get();
+                Tweet selectedTweet = optionalTweet.get();
+
+                if (selectedTweet.isDeleted() || user.isDeleted()) {
+                    throw new BadRequestException("Cannot repost deleted content.");
+                }
+
+                user.getCreatedTweets().add(selectedTweet);
+                userRepository.saveAndFlush(user);
+                return tweetMapper.entityToDto(selectedTweet);
+            } else {
+                if (!optionalUser.isPresent()) {
+                    throw new NotFoundException("User not found");
+                }
+                if (!optionalTweet.isPresent()) {
+                    throw new NotFoundException("Tweet not found");
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BadRequestException(BAD_REQUEST_MSG);
+        }
         return null;
     }
 
@@ -148,8 +208,8 @@ public class TweetServiceImpl implements TweetService {
                 throw new NotFoundException(TAGS_NOT_FOUND_MSG + id);
             }
         } catch (Exception e) {
-        throw new BadRequestException(BAD_REQUEST_MSG);
-    }
+            throw new BadRequestException(BAD_REQUEST_MSG);
+        }
     }
 
     @Override
@@ -162,7 +222,7 @@ public class TweetServiceImpl implements TweetService {
                 Tweet selectedTweet = optionalTweet.get();
 
                 List<User> userLikes = new ArrayList<>();
-                for (User u: selectedTweet.getLikedByUsers()) {
+                for (User u : selectedTweet.getLikedByUsers()) {
                     if (!u.isDeleted()) {
                         userLikes.add(u);
                     }
