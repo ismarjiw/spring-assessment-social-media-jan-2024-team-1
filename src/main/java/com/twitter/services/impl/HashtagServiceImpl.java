@@ -1,7 +1,11 @@
 package com.twitter.services.impl;
 
 import com.twitter.dtos.HashtagDto;
+import com.twitter.dtos.TweetResponseDto;
 import com.twitter.entities.Hashtag;
+import com.twitter.entities.Tweet;
+import com.twitter.exceptions.NotFoundException;
+import com.twitter.mappers.TweetMapper;
 import org.springframework.stereotype.Service;
 
 import com.twitter.mappers.HashtagMapper;
@@ -19,7 +23,8 @@ import java.util.Random;
 public class HashtagServiceImpl implements HashtagService {
     private final HashtagRepository hashtagRepository;
     private final HashtagMapper hashtagMapper;
-
+private final TweetMapper tweetMapper;
+private  final TweetRepository tweetRepository;
 public List<HashtagDto> getAllTags(){
     return hashtagMapper.entitiesToDtos(hashtagRepository.findAll());
 }
@@ -29,4 +34,14 @@ public HashtagDto getRandomTag(){
     Hashtag tag = tags.get((rand.nextInt(tags.size())));
     return hashtagMapper.entityToDto(tag);
 }
+
+    @Override
+    public List<TweetResponseDto> getTagLabel(String label) {
+    Hashtag tag = hashtagRepository.findByLabel(label);
+    if (tag==null){
+        throw new NotFoundException("Not found tag with label: "+label);
+    }
+    List<Tweet> tweetsWithTag = tag.getTweets();
+    return tweetMapper.entitiesToDtos(tweetsWithTag);
+    }
 }
