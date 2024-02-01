@@ -6,6 +6,7 @@ import com.twitter.entities.Hashtag;
 import com.twitter.entities.Tweet;
 import com.twitter.entities.User;
 import com.twitter.exceptions.BadRequestException;
+import com.twitter.exceptions.NotAuthorizedException;
 import com.twitter.exceptions.NotFoundException;
 import com.twitter.mappers.CredentialsMapper;
 import com.twitter.mappers.HashtagMapper;
@@ -74,39 +75,34 @@ public class TweetServiceImpl implements TweetService {
 
     @Override
     public TweetResponseDto deleteTweetById(Long id, CredentialsDto credentialsDto) {
+
         Optional<Tweet> tweetToDelete = tweetRepository.findById(id);
         Credentials credentials = credentialsMapper.dtoToEntity(credentialsDto);
-        System.out.println("*********************");
-        System.out.println(credentials); // Credentials(username=null, password=null)
-        System.out.println("*********************");
         Optional<User> optionalUser = userRepository.findByCredentials(credentials);
 
-//        com.twitter.exceptions.NotFoundException: User not found
+        if (!tweetToDelete.isPresent()) {
+            throw new NotFoundException("Tweet not found");
+        }
+
+        if (!optionalUser.isPresent()) {
+            throw new NotFoundException("User not found");
+        }
+
         try {
-            if (tweetToDelete.isPresent() && optionalUser.isPresent()) {
-                Tweet deletedTweet = tweetToDelete.get();
-                Long authorOfTweetById = tweetToDelete.get().getAuthor().getId();
-                User currentUser = optionalUser.get();
+            Tweet deletedTweet = tweetToDelete.get();
+            Long authorOfTweetById = deletedTweet.getAuthor().getId();
+            User currentUser = optionalUser.get();
 
-                if (authorOfTweetById.equals(currentUser.getId())) {
-                    deletedTweet.setDeleted(true);
-                    tweetRepository.saveAndFlush(deletedTweet);
-                }
-
+            if (authorOfTweetById.equals(currentUser.getId())) {
+                deletedTweet.setDeleted(true);
+                tweetRepository.saveAndFlush(deletedTweet);
                 return tweetMapper.entityToDto(deletedTweet);
             } else {
-                if (!optionalUser.isPresent()) {
-                    throw new NotFoundException("User not found");
-                }
-                if (!tweetToDelete.isPresent()) {
-                    throw new NotFoundException("Tweet not found");
-                }
+                throw new NotAuthorizedException("User not allowed to delete this tweet");
             }
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new BadRequestException("Error deleting tweet");
+            throw new BadRequestException(BAD_REQUEST_MSG);
         }
-        return null;
     }
 
     @Override
@@ -132,27 +128,21 @@ public class TweetServiceImpl implements TweetService {
         Optional<Tweet> optionalTweet = tweetRepository.findById(id);
         Credentials credentials = credentialsMapper.dtoToEntity(credentialsDto);
         Optional<User> optionalUser = userRepository.findByCredentials(credentials);
-        // com.twitter.exceptions.NotFoundException: User not found
-        try {
-            if (optionalUser.isPresent() && optionalTweet.isPresent()) {
-                User user = optionalUser.get();
-                Tweet selectedTweet = optionalTweet.get();
 
-                if (!user.getLikedTweets().contains(selectedTweet)) {
-                    user.getLikedTweets().add(selectedTweet);
-                    userRepository.saveAndFlush(user);
-                }
-            } else {
-                if (!optionalUser.isPresent()) {
-                    throw new NotFoundException("User not found");
-                }
-                if (!optionalTweet.isPresent()) {
-                    throw new NotFoundException("Tweet not found");
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BadRequestException(BAD_REQUEST_MSG);
+        if (!optionalTweet.isPresent() || optionalTweet.get().isDeleted()) {
+            throw new NotFoundException("Tweet not found");
+        }
+
+        if (!optionalUser.isPresent()) {
+            throw new NotFoundException("User not found");
+        }
+
+        User user = optionalUser.get();
+        Tweet selectedTweet = optionalTweet.get();
+
+        if (!user.getLikedTweets().contains(selectedTweet)) {
+            user.getLikedTweets().add(selectedTweet);
+            userRepository.saveAndFlush(user);
         }
     }
 
@@ -166,33 +156,27 @@ public class TweetServiceImpl implements TweetService {
         Optional<Tweet> optionalTweet = tweetRepository.findById(id);
         Credentials credentials = credentialsMapper.dtoToEntity(credentialsDto);
         Optional<User> optionalUser = userRepository.findByCredentials(credentials);
-        // com.twitter.exceptions.NotFoundException: User not found
+
+        if (!optionalTweet.isPresent() || optionalTweet.get().isDeleted()) {
+            throw new NotFoundException("Tweet not found");
+        }
+
+        if (!optionalUser.isPresent() || optionalUser.get().isDeleted()) {
+            throw new NotFoundException("User not found");
+        }
+
         try {
-            if (optionalUser.isPresent() && optionalTweet.isPresent()) {
-                User user = optionalUser.get();
-                Tweet selectedTweet = optionalTweet.get();
+            User user = optionalUser.get();
+            Tweet selectedTweet = optionalTweet.get();
 
-                if (selectedTweet.isDeleted() || user.isDeleted()) {
-                    throw new BadRequestException("Cannot repost deleted content.");
-                }
-
-                user.getCreatedTweets().add(selectedTweet);
-                userRepository.saveAndFlush(user);
-                return tweetMapper.entityToDto(selectedTweet);
-            } else {
-                if (!optionalUser.isPresent()) {
-                    throw new NotFoundException("User not found");
-                }
-                if (!optionalTweet.isPresent()) {
-                    throw new NotFoundException("Tweet not found");
-                }
-            }
+            user.getCreatedTweets().add(selectedTweet);
+            userRepository.saveAndFlush(user);
+            return tweetMapper.entityToDto(selectedTweet);
         } catch (Exception e) {
-            e.printStackTrace();
             throw new BadRequestException(BAD_REQUEST_MSG);
         }
-        return null;
     }
+
 
     @Override
     public List<HashtagDto> getTagsByTweetId(Long id) {
@@ -273,6 +257,7 @@ public class TweetServiceImpl implements TweetService {
 
     @Override
     public List<Tweet> getBeforeChain(Tweet tweet) {
+
         List<Tweet> chain = new ArrayList<>();
         getRepliesBeforeChain(tweet.getInReplyTo(), chain);
         return chain.stream()
@@ -282,6 +267,7 @@ public class TweetServiceImpl implements TweetService {
 
     @Override
     public List<Tweet> getAfterChain(Tweet tweet) {
+
         List<Tweet> chain = new ArrayList<>();
         getRepliesAfterChain(tweet.getInReplyTo(), chain);
         return chain.stream()
@@ -291,6 +277,7 @@ public class TweetServiceImpl implements TweetService {
 
     @Override
     public List<TweetResponseDto> getRepliesBeforeChain(Tweet tweet, List<Tweet> chain) {
+
         if (tweet != null) {
             if (chain == null) {
                 chain = new ArrayList<>();
@@ -319,6 +306,7 @@ public class TweetServiceImpl implements TweetService {
 
     @Override
     public List<Tweet> flattenReplies(List<Tweet> tweets, Tweet targetTweet) {
+
         List<Tweet> flattenedList = new ArrayList<>();
         for (Tweet tweet : tweets) {
             if (!tweet.getId().equals(targetTweet.getId())) {
@@ -331,6 +319,7 @@ public class TweetServiceImpl implements TweetService {
 
     @Override
     public List<TweetResponseDto> getRepliesByTweetId(Long id) {
+
         Optional<Tweet> optionalTweet = tweetRepository.findById(id);
 
         try {
@@ -348,6 +337,7 @@ public class TweetServiceImpl implements TweetService {
 
     @Override
     public List<TweetResponseDto> getRepostsByTweetId(Long id) {
+
         Optional<Tweet> optionalTweet = tweetRepository.findById(id);
 
         try {
@@ -365,6 +355,7 @@ public class TweetServiceImpl implements TweetService {
 
     @Override
     public List<UserResponseDto> getMentionsByTweetId(Long id) {
+
         Optional<Tweet> optionalTweet = tweetRepository.findById(id);
 
         try {
