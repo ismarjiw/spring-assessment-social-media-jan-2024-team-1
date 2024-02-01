@@ -9,7 +9,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import com.twitter.embeddables.Credentials;
 import com.twitter.embeddables.Profile;
 
-import jakarta.persistence.Embeddable;
 import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

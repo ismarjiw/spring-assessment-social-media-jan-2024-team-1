@@ -2,9 +2,7 @@ package com.twitter.services;
 
 import com.twitter.dtos.*;
 import com.twitter.entities.Tweet;
-import com.twitter.entities.User;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public interface TweetService {
@@ -13,15 +11,15 @@ public interface TweetService {
 
     TweetResponseDto createTweet(TweetRequestDto tweetRequestDto);
 
-    TweetResponseDto deleteTweetById(Long id);
+    TweetResponseDto deleteTweetById(Long id, CredentialsDto credentialsDto);
 
     TweetResponseDto getTweetById(Long id);
 
-    TweetResponseDto likeTweetById(Long id, User user);
+    void likeTweetById(Long id, CredentialsDto credentialsDto);
 
-    TweetResponseDto replyToTweetById(Long id, Tweet tweet);
+    TweetResponseDto replyToTweetById(Long id, TweetRequestDto tweetRequestDto);
 
-    TweetResponseDto repostTweetById(Long id, Tweet tweet);
+    TweetResponseDto repostTweetById(Long id, CredentialsDto credentialsDto);
 
     List<HashtagDto> getTagsByTweetId(Long id);
 

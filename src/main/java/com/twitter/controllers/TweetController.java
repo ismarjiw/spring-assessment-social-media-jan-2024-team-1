@@ -1,17 +1,11 @@
 package com.twitter.controllers;
 
 
-import com.twitter.dtos.ContextDto;
-import com.twitter.dtos.HashtagDto;
-import com.twitter.dtos.TweetResponseDto;
-import com.twitter.dtos.UserResponseDto;
+import com.twitter.dtos.*;
 import com.twitter.entities.Tweet;
 import com.twitter.services.TweetService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -74,5 +68,44 @@ public class TweetController {
             @PathVariable Long id
     ) {
         return tweetService.getRepliesByTweetId(id);
+    }
+
+    @PostMapping
+    public TweetResponseDto createTweet(
+            @RequestBody TweetRequestDto tweetRequestDto
+    ) {
+        return tweetService.createTweet(tweetRequestDto);
+    }
+
+    @PostMapping("/{id}/like")
+    public void likeTweet(
+            @PathVariable Long id,
+            @RequestBody CredentialsDto credentialsDto
+    ) {
+        tweetService.likeTweetById(id, credentialsDto);
+    }
+
+
+    @PostMapping("/{id}/repost")
+    public TweetResponseDto repostTweet(
+            @PathVariable Long id,
+            @RequestBody CredentialsDto credentialsDto
+    ) {
+        return tweetService.repostTweetById(id, credentialsDto);
+    }
+
+    @PostMapping("/{id}/reply")
+    public TweetResponseDto replyToTweet(
+            @PathVariable Long id,
+            @RequestBody TweetRequestDto tweetRequestDto
+    ) {
+        return tweetService.replyToTweetById(id, tweetRequestDto);
+    }
+    @DeleteMapping("/{id}")
+    public TweetResponseDto deleteTweet(
+            @PathVariable Long id,
+            @RequestBody CredentialsDto credentialsDto
+    ) {
+        return tweetService.deleteTweetById(id, credentialsDto);
     }
 }
