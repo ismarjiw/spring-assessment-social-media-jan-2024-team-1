@@ -26,6 +26,7 @@ import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -188,16 +189,6 @@ public class UserServiceImpl implements UserService {
         }
     }
 
-//    @Override
-//    public List<TweetResponseDto> getAllTweets(String username) {
-//        User user = userRepository.findByCredentialsUsername(username);
-//        if (user == null || user.isDeleted()) {
-//            throw new NotFoundException("Not found user with username: " + username);
-//
-//        }
-//        return tweetMapper.entitiesToDtos(user.getCreatedTweets());
-//    }
-
     @Override
     public List<TweetResponseDto> getAllTweets(String username) {
 
@@ -216,21 +207,24 @@ public class UserServiceImpl implements UserService {
         return tweetMapper.entitiesToDtos(createdTweets);
     }
 
-
     @Override
     public List<TweetResponseDto> getAllFeed(String username) {
 
-        List<Tweet> resultArray = new ArrayList<>();
-        User user = userRepository.findByCredentialsUsername(username);
-        if (user == null || user.isDeleted()) {
+        User currentUser = userRepository.findByCredentialsUsername(username);
+
+        if (currentUser == null || currentUser.isDeleted()) {
             throw new NotFoundException("Not found user with username: " + username);
         }
-        resultArray.addAll(user.getCreatedTweets());
-        for (User u : user.getFollowing()) {
-            if (!user.isDeleted()) {
-                resultArray.addAll(user.getCreatedTweets());
+        List<Tweet> resultArray = new ArrayList<>(currentUser.getCreatedTweets());
+
+        for (User u : currentUser.getFollowing()) {
+            if (!u.isDeleted()) {
+                resultArray.addAll(u.getCreatedTweets());
             }
         }
+
+        resultArray.sort(Comparator.comparing(Tweet::getPosted).reversed());
+
         return tweetMapper.entitiesToDtos(resultArray);
     }
 
