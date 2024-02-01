@@ -188,16 +188,34 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+//    @Override
+//    public List<TweetResponseDto> getAllTweets(String username) {
+//        User user = userRepository.findByCredentialsUsername(username);
+//        if (user == null || user.isDeleted()) {
+//            throw new NotFoundException("Not found user with username: " + username);
+//
+//        }
+//        return tweetMapper.entitiesToDtos(user.getCreatedTweets());
+//    }
+
     @Override
     public List<TweetResponseDto> getAllTweets(String username) {
+
         User user = userRepository.findByCredentialsUsername(username);
+
         if (user == null || user.isDeleted()) {
-            throw new NotFoundException("Not found user with username: " + username);
-
-
+            throw new NotFoundException("User not found or is inactive: " + username);
         }
-        return tweetMapper.entitiesToDtos(user.getCreatedTweets());
+
+        List<Tweet> createdTweets = user.getCreatedTweets();
+
+        if (createdTweets.isEmpty()) {
+            return tweetMapper.entitiesToDtos(new ArrayList<>());
+        }
+
+        return tweetMapper.entitiesToDtos(createdTweets);
     }
+
 
     @Override
     public List<TweetResponseDto> getAllFeed(String username) {
@@ -227,7 +245,5 @@ public class UserServiceImpl implements UserService {
 
         return tweetMapper.entitiesToDtos(mentionedTweets);
     }
-
-
 
 }
