@@ -19,10 +19,7 @@ import com.twitter.services.TweetService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -176,7 +173,6 @@ public class TweetServiceImpl implements TweetService {
             throw new BadRequestException(BAD_REQUEST_MSG);
         }
     }
-
 
     @Override
     public List<HashtagDto> getTagsByTweetId(Long id) {

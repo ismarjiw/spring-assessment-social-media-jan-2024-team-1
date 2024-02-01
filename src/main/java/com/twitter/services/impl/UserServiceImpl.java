@@ -13,6 +13,7 @@ import com.twitter.exceptions.NotAuthorizedException;
 import com.twitter.exceptions.NotFoundException;
 import com.twitter.mappers.ProfileMapper;
 import com.twitter.mappers.TweetMapper;
+import com.twitter.repositories.TweetRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
@@ -24,16 +25,20 @@ import com.twitter.services.UserService;
 import lombok.RequiredArgsConstructor;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
+
     private final UserRepository userRepository;
+    private final TweetRepository tweetRepository;
     private final UserMapper userMapper;
     private final ProfileMapper profileMapper;
     private final CredentialsMapper credentialsMapper;
-private final TweetMapper tweetMapper;
+    private final TweetMapper tweetMapper;
+
     @Override
     public List<UserResponseDto> getAllUsersNonDeleted() {
 
@@ -87,24 +92,24 @@ private final TweetMapper tweetMapper;
         } else if (!user.getCredentials().getUsername().equals(username) || !user.getCredentials().getPassword().equals(credentials.getPassword())) {
             throw new NotAuthorizedException("Credentials not vaild");
         }
-        if(userRequestDto.getProfile()==null){
+        if (userRequestDto.getProfile() == null) {
             throw new BadRequestException("Profile (Email) cannot be null");
         }
 
-            Profile profile = profileMapper.DtoToEntity(userRequestDto.getProfile());
-            user.setCredentials(credentialsMapper.DtoToEntity(credentials));
-            if (profile.getFirstName()!=null){
-                user.getProfile().setFirstName(profile.getFirstName());
-            }
-            if (profile.getLastName()!=null){
-                user.getProfile().setLastName(profile.getLastName());
-            }
-            if(profile.getEmail()!=null){
-                user.getProfile().setEmail(profile.getEmail());
-            }
-            if (profile.getPhone()!=null){
-                user.getProfile().setPhone(profile.getPhone());
-            }
+        Profile profile = profileMapper.DtoToEntity(userRequestDto.getProfile());
+        user.setCredentials(credentialsMapper.DtoToEntity(credentials));
+        if (profile.getFirstName() != null) {
+            user.getProfile().setFirstName(profile.getFirstName());
+        }
+        if (profile.getLastName() != null) {
+            user.getProfile().setLastName(profile.getLastName());
+        }
+        if (profile.getEmail() != null) {
+            user.getProfile().setEmail(profile.getEmail());
+        }
+        if (profile.getPhone() != null) {
+            user.getProfile().setPhone(profile.getPhone());
+        }
 
 
         user = userRepository.saveAndFlush(user);
@@ -114,7 +119,7 @@ private final TweetMapper tweetMapper;
     }
 
     @Override
-    public UserResponseDto deleteUser(String username, CredentialsDto credentialsDto){
+    public UserResponseDto deleteUser(String username, CredentialsDto credentialsDto) {
         if (credentialsDto == null || credentialsDto.getUsername() == null || credentialsDto.getPassword() == null) {
             throw new BadRequestException("Credentials cannot be null.");
         }
@@ -122,7 +127,7 @@ private final TweetMapper tweetMapper;
         User user = userRepository.findByCredentialsUsername(username);
         if (user == null) {
             throw new NotFoundException("Not found user with username: " + username);
-        } else if (!user.getCredentials().getUsername().equals(username)|| !user.getCredentials().getPassword().equals(credentialsDto.getPassword())) {
+        } else if (!user.getCredentials().getUsername().equals(username) || !user.getCredentials().getPassword().equals(credentialsDto.getPassword())) {
             throw new NotAuthorizedException("Credentials not vaild");
         }
         user.setDeleted(true);
@@ -132,15 +137,16 @@ private final TweetMapper tweetMapper;
 
 
     @Override
-    public List<UserResponseDto> getAllFollowings(String username){
+    public List<UserResponseDto> getAllFollowings(String username) {
         User user = userRepository.findByCredentialsUsername(username);
         if (user == null) {
             throw new NotFoundException("Not found user with username: " + username);
         }
         return userMapper.entitiesToDtos(user.getFollowing());
     }
+
     @Override
-    public List<UserResponseDto> getAllFollowers(String username){
+    public List<UserResponseDto> getAllFollowers(String username) {
         User user = userRepository.findByCredentialsUsername(username);
         if (user == null) {
             throw new NotFoundException("Not found user with username: " + username);
@@ -150,16 +156,16 @@ private final TweetMapper tweetMapper;
 
     @Override
     public void createFollowRelationship(String username, CredentialsDto credentialsDto) {
-        User user=userRepository.findByCredentialsUsername(username);
-        User user2 =userRepository.findByCredentialsUsernameAndCredentialsPassword(credentialsDto.getUsername(),credentialsDto.getPassword());
-        if (user==null|| user.isDeleted()) {
-            throw new NotFoundException("Not found user with username: "+username);
-        }else if(user2==null){
+        User user = userRepository.findByCredentialsUsername(username);
+        User user2 = userRepository.findByCredentialsUsernameAndCredentialsPassword(credentialsDto.getUsername(), credentialsDto.getPassword());
+        if (user == null || user.isDeleted()) {
+            throw new NotFoundException("Not found user with username: " + username);
+        } else if (user2 == null) {
             throw new NotAuthorizedException("Not authorized");
 
         } else if (user.getFollowers().contains(user2)) {
             throw new BadRequestException("You already followed this account");
-        }else {
+        } else {
             user.getFollowers().add(user2);
             userRepository.saveAndFlush(user);
         }
@@ -167,16 +173,16 @@ private final TweetMapper tweetMapper;
 
     @Override
     public void removeFollowRelationship(String username, CredentialsDto credentialsDto) {
-        User user=userRepository.findByCredentialsUsername(username);
-        User user2 =userRepository.findByCredentialsUsernameAndCredentialsPassword(credentialsDto.getUsername(),credentialsDto.getPassword());
-        if (user==null|| user.isDeleted()) {
-            throw new NotFoundException("Not found user with username: "+username);
-        }else if(user2==null){
+        User user = userRepository.findByCredentialsUsername(username);
+        User user2 = userRepository.findByCredentialsUsernameAndCredentialsPassword(credentialsDto.getUsername(), credentialsDto.getPassword());
+        if (user == null || user.isDeleted()) {
+            throw new NotFoundException("Not found user with username: " + username);
+        } else if (user2 == null) {
             throw new NotAuthorizedException("Not authorized");
 
         } else if (!user.getFollowers().contains(user2)) {
             throw new BadRequestException("You are not following this account");
-        }else {
+        } else {
             user.getFollowers().remove(user2);
             userRepository.saveAndFlush(user);
         }
@@ -192,6 +198,7 @@ private final TweetMapper tweetMapper;
         }
         return tweetMapper.entitiesToDtos(user.getCreatedTweets());
     }
+
     @Override
     public List<TweetResponseDto> getAllFeed(String username) {
 
@@ -208,14 +215,19 @@ private final TweetMapper tweetMapper;
         }
         return tweetMapper.entitiesToDtos(resultArray);
     }
+
     @Override
     public List<TweetResponseDto> getAllMentions(String username) {
-        User user = userRepository.findByCredentialsUsername(username);
-        if (user == null || user.isDeleted()) {
+        User mentionedUser = userRepository.findByCredentialsUsername(username);
+
+        if (mentionedUser == null || mentionedUser.isDeleted()) {
             throw new NotFoundException("Not found user with username: " + username);
         }
-        return tweetMapper.entitiesToDtos(user.getMentionedTweets());
+        List<Tweet> mentionedTweets = tweetRepository.findByContentContainingOrderByPostedDesc("@" + username);
+
+        return tweetMapper.entitiesToDtos(mentionedTweets);
     }
+
 
 
 }
