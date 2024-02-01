@@ -21,10 +21,10 @@ private final HashtagService hashtagService;
 public List<HashtagDto> getAllTags(){
     return hashtagService.getAllTags();
 }
-@GetMapping("/randomTag")
-public HashtagDto getRandomTag(){
-return hashtagService.getRandomTag();
-}
+//@GetMapping("/randomTag")
+//public HashtagDto getRandomTag(){
+//return hashtagService.getRandomTag();
+//}
     @GetMapping("/{label}")
     public List<TweetResponseDto> getTagLabel(@PathVariable String label){
         return hashtagService.getTagLabel(label);

@@ -28,12 +28,12 @@ private  final TweetRepository tweetRepository;
 public List<HashtagDto> getAllTags(){
     return hashtagMapper.entitiesToDtos(hashtagRepository.findAll());
 }
-public HashtagDto getRandomTag(){
-    List<Hashtag> tags=hashtagRepository.findAll();
-    Random rand=new Random();
-    Hashtag tag = tags.get((rand.nextInt(tags.size())));
-    return hashtagMapper.entityToDto(tag);
-}
+//public HashtagDto getRandomTag(){
+//    List<Hashtag> tags=hashtagRepository.findAll();
+//    Random rand=new Random();
+//    Hashtag tag = tags.get((rand.nextInt(tags.size())));
+//    return hashtagMapper.entityToDto(tag);
+//}
 
     @Override
     public List<TweetResponseDto> getTagLabel(String label) {

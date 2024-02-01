@@ -8,7 +8,7 @@ import java.util.List;
 public interface HashtagService {
 
     List<HashtagDto> getAllTags();
-    HashtagDto getRandomTag();
+//    HashtagDto getRandomTag();
 
     List<TweetResponseDto> getTagLabel(String label);
 }
