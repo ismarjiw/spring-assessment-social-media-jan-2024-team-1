@@ -218,6 +218,7 @@ public class UserServiceImpl implements UserService {
         List<Tweet> resultArray = new ArrayList<>(currentUser.getCreatedTweets());
 
         for (User u : currentUser.getFollowing()) {
+
             if (!u.isDeleted()) {
                 resultArray.addAll(u.getCreatedTweets());
             }

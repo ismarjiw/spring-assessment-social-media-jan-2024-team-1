@@ -20,6 +20,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -33,7 +39,7 @@ public class TweetServiceImpl implements TweetService {
     private final UserRepository userRepository;
 
     private final HashtagMapper hashtagMapper;
-
+    private final HashtagRepository hashtagRepository;
     private final CredentialsMapper credentialsMapper;
 
     private static final String TWEET_NOT_FOUND_MSG = "Tweet not found with ID: ";
@@ -49,18 +55,25 @@ public class TweetServiceImpl implements TweetService {
 
     @Override
     public TweetResponseDto createTweet(TweetRequestDto tweetRequestDto) {
-
+//        if (tweetRequestDto.getCredentials() == null || tweetRequestDto.getContent() == null) {
+//            throw new BadRequestException(BAD_REQUEST_MSG);
+//        }
         Credentials credentials = credentialsMapper.dtoToEntity(tweetRequestDto.getCredentials());
         Optional<User> optionalUser = userRepository.findByCredentials(credentials);
 
         try {
             if (optionalUser.isPresent()) {
                 User author = optionalUser.get();
+
                 Tweet tweetToSave = tweetMapper.requestDtoToEntity(tweetRequestDto);
                 tweetToSave.setAuthor(author);
+                List<User> mentionedUsers = extractMentions(tweetToSave.getContent());
+                tweetToSave.setMentionedUsers(mentionedUsers);
+
+                List<Hashtag> potentialtags = extractTags(tweetToSave.getContent());
+                tweetToSave.setHashtags(potentialtags);
 
                 Tweet savedTweet = tweetRepository.saveAndFlush(tweetToSave);
-
                 return tweetMapper.entityToDto(savedTweet);
             } else {
                 throw new NotFoundException(USER_NOT_FOUND_MSG);
@@ -68,6 +81,58 @@ public class TweetServiceImpl implements TweetService {
         } catch (Exception e) {
             throw new BadRequestException(BAD_REQUEST_MSG);
         }
+    }
+
+    public List<User> extractMentions(String tweetContent) {
+        List<User> mentions = new ArrayList<>();
+
+        // Define a regex pattern for mentions
+        Pattern mentionsPattern = Pattern.compile("@[\\w_]+");
+
+        // Create a matcher with the tweet content
+        Matcher matcher = mentionsPattern.matcher(tweetContent);
+
+        // Find all mentions and add them to the list
+        while (matcher.find()) {
+            String username = matcher.group().substring(1);
+            User user = userRepository.findByCredentialsUsername(username);
+
+            if (user != null) {
+                mentions.add(user);
+
+                System.out.print(user.getCredentials().getUsername());
+            }
+
+        }
+
+        return mentions;
+    }
+
+    public List<Hashtag> extractTags(String tweetContent) {
+        List<Hashtag> tags = new ArrayList<>();
+
+        // Define a regex pattern for mentions
+        Pattern tagPattern = Pattern.compile("#[\\w_]+");
+
+        // Create a matcher with the tweet content
+        Matcher matcher = tagPattern.matcher(tweetContent);
+
+        // Find all mentions and add them to the list
+        while (matcher.find()) {
+            String tagLabel = matcher.group().substring(1);
+            Hashtag tag = hashtagRepository.findByLabel(tagLabel);
+            if (tag != null) {
+                tags.add(tag);
+            } else {
+                Hashtag newtag = new Hashtag();
+                newtag.setLabel(tagLabel);
+                hashtagRepository.save(newtag);
+                tags.add(newtag);
+            }
+
+        }
+
+        return tags;
     }
 
     @Override
