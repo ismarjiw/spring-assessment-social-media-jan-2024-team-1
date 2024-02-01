@@ -2,6 +2,7 @@ package com.twitter.mappers;
 
 
 import com.twitter.dtos.TweetRequestDto;
+import com.twitter.dtos.TweetResponseDto;
 import com.twitter.entities.Tweet;
 import org.mapstruct.Mapper;
 
