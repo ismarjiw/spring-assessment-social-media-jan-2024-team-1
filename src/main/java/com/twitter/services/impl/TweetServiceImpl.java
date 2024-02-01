@@ -215,6 +215,7 @@ public class TweetServiceImpl implements TweetService {
 
     @Override
     public TweetResponseDto repostTweetById(Long id, CredentialsDto credentialsDto) {
+
         Optional<Tweet> optionalTweet = tweetRepository.findById(id);
         Credentials credentials = credentialsMapper.dtoToEntity(credentialsDto);
         Optional<User> optionalUser = userRepository.findByCredentials(credentials);
@@ -231,9 +232,16 @@ public class TweetServiceImpl implements TweetService {
             User user = optionalUser.get();
             Tweet selectedTweet = optionalTweet.get();
 
-            user.getCreatedTweets().add(selectedTweet);
-            userRepository.saveAndFlush(user);
-            return tweetMapper.entityToDto(selectedTweet);
+            if (user.getCreatedTweets().contains(selectedTweet)) {
+                throw new BadRequestException("User has already reposted this tweet");
+            }
+
+            Tweet repostTweet = new Tweet();
+            repostTweet.setAuthor(user);
+            repostTweet.setRepostOf(selectedTweet);
+            Tweet savedRepostTweet = tweetRepository.saveAndFlush(repostTweet);
+
+            return tweetMapper.entityToDto(savedRepostTweet);
         } catch (Exception e) {
             throw new BadRequestException(BAD_REQUEST_MSG);
         }
