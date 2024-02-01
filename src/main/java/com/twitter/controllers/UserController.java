@@ -1,11 +1,28 @@
 package com.twitter.controllers;
 
+import com.twitter.dtos.UserRequestDto;
+import com.twitter.dtos.UserResponseDto;
+import com.twitter.services.UserService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/users")
 public class UserController {
+    private final UserService userService;
+    @GetMapping
+    public List<UserResponseDto> getAllUsersNonDeleted(){
+        return userService.getAllUsersNonDeleted();
+    }
+
+    @GetMapping("/@{username}")
+    public UserResponseDto getUserByUsername(@PathVariable String username){
+        return userService.getUserByUsername(username);
+    }
+//    @PostMapping
+//    public UserResponseDto createUser(){}
 }
+
