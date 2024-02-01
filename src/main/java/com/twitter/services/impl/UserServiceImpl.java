@@ -228,17 +228,24 @@ public class UserServiceImpl implements UserService {
 
         return tweetMapper.entitiesToDtos(resultArray);
     }
-
-    @Override
+@Override
     public List<TweetResponseDto> getAllMentions(String username) {
-        User mentionedUser = userRepository.findByCredentialsUsername(username);
-
-        if (mentionedUser == null || mentionedUser.isDeleted()) {
+        User user = userRepository.findByCredentialsUsername(username);
+        if (user == null || user.isDeleted()) {
             throw new NotFoundException("Not found user with username: " + username);
         }
-        List<Tweet> mentionedTweets = tweetRepository.findByContentContainingOrderByPostedDesc("@" + username);
-
-        return tweetMapper.entitiesToDtos(mentionedTweets);
+        return tweetMapper.entitiesToDtos(user.getMentionedTweets());
     }
+    // @Override
+    // public List<TweetResponseDto> getAllMentions(String username) {
+    //     User mentionedUser = userRepository.findByCredentialsUsername(username);
+
+    //     if (mentionedUser == null || mentionedUser.isDeleted()) {
+    //         throw new NotFoundException("Not found user with username: " + username);
+    //     }
+    //     List<Tweet> mentionedTweets = tweetRepository.findByContentContainingOrderByPostedDesc("@" + username);
+
+    //     return tweetMapper.entitiesToDtos(mentionedTweets);
+    // }
 
 }
