@@ -202,8 +202,8 @@ private final TweetMapper tweetMapper;
         }
         resultArray.addAll(user.getCreatedTweets());
         for (User u : user.getFollowing()) {
-            if (!user.isDeleted()) {
-                resultArray.addAll(user.getCreatedTweets());
+            if (!u.isDeleted()) {
+                resultArray.addAll(u.getCreatedTweets());
             }
         }
         return tweetMapper.entitiesToDtos(resultArray);
