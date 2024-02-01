@@ -206,7 +206,9 @@ public class TweetServiceImpl implements TweetService {
                 Tweet selectedTweet = optionalTweet.get();
 
                 List<User> userLikes = new ArrayList<>();
+
                 for (User u : selectedTweet.getLikedByUsers()) {
+
                     if (!u.isDeleted()) {
                         userLikes.add(u);
                     }

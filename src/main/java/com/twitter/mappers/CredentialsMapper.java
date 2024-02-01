@@ -9,5 +9,9 @@ import java.util.List;
 @Mapper(componentModel="spring")
 public interface CredentialsMapper {
 
+
     Credentials dtoToEntity(CredentialsDto credentialsDto);
+
+    Credentials DtoToEntity(CredentialsDto credentialsDto);
+
 }

@@ -13,4 +13,19 @@ import lombok.RequiredArgsConstructor;
 public class ValidateServiceImpl implements ValidateService {
 	private final HashtagRepository hashtagRepository;
     private final UserRepository userRepository;
+
+    @Override
+    public boolean checkHashtagExists(String label) {
+        return (hashtagRepository.findByLabel(label)!=null);
+    }
+
+    @Override
+    public boolean checkUserExists(String username) {
+        return (userRepository.findByCredentialsUsername(username)!=null);
+    }
+
+    @Override
+    public boolean checkUsernameAvailable(String username) {
+        return (userRepository.findByCredentialsUsername(username)==null);
+    }
 }
