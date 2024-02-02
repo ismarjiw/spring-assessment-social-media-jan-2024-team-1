@@ -19,6 +19,7 @@ import com.twitter.services.TweetService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -26,6 +27,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import static org.apache.coyote.http11.Constants.a;
 
 @Service
 @RequiredArgsConstructor
@@ -55,9 +59,9 @@ public class TweetServiceImpl implements TweetService {
 
     @Override
     public TweetResponseDto createTweet(TweetRequestDto tweetRequestDto) {
-//        if (tweetRequestDto.getCredentials() == null || tweetRequestDto.getContent() == null) {
-//            throw new BadRequestException(BAD_REQUEST_MSG);
-//        }
+        if (tweetRequestDto.getCredentials() == null || tweetRequestDto.getContent() == null) {
+            throw new BadRequestException(BAD_REQUEST_MSG);
+        }
         Credentials credentials = credentialsMapper.dtoToEntity(tweetRequestDto.getCredentials());
         Optional<User> optionalUser = userRepository.findByCredentials(credentials);
 
@@ -248,18 +252,21 @@ public class TweetServiceImpl implements TweetService {
 
         try {
             User user = optionalUser.get();
-            Tweet selectedTweet = optionalTweet.get();
-
-            if (user.getCreatedTweets().contains(selectedTweet)) {
+            Tweet replyToTweet = optionalTweet.get();
+          if (user.getCreatedTweets().contains(replyToTweet)) {
                 throw new BadRequestException("User has already reposted this tweet");
             }
+            Tweet newTweetReplying = new Tweet();
 
-            Tweet repostTweet = new Tweet();
-            repostTweet.setAuthor(user);
-            repostTweet.setRepostOf(selectedTweet);
-            Tweet savedRepostTweet = tweetRepository.saveAndFlush(repostTweet);
 
-            return tweetMapper.entityToDto(savedRepostTweet);
+            newTweetReplying.setAuthor(optionalUser.get());
+            newTweetReplying.setRepostOf(replyToTweet);
+
+            return tweetMapper.entityToDto(tweetRepository.saveAndFlush(newTweetReplying));
+
+            
+
+           
         } catch (Exception e) {
             throw new BadRequestException(BAD_REQUEST_MSG);
         }
@@ -310,106 +317,138 @@ public class TweetServiceImpl implements TweetService {
         }
     }
 
-    @Override
-    public ContextDto getContextByTweetId(Long id) {
+@Override
+public ContextDto getContextByTweetId(Long id) {
+    Optional<Tweet> optionalTweet = tweetRepository.findById(id);
+    if (!optionalTweet.isPresent() || optionalTweet.get().isDeleted()){
+        throw new NotFoundException("Tweet not found with id:"+id);
+    }
+    Tweet target=optionalTweet.get();
+    List<Tweet> before = new ArrayList<>();
+    Tweet checkedtweet = target.getInReplyTo();
+    while (checkedtweet!=null ){
+        if (!checkedtweet.isDeleted()){
+        before.add(checkedtweet);}
+        checkedtweet=checkedtweet.getInReplyTo();
+    }
+    List<Tweet> after = afterTweets(target);
+    List<TweetResponseDto> beforeDto =tweetMapper.entitiesToDtos(before);
+    List<TweetResponseDto> afterDto =tweetMapper.entitiesToDtos(after);
+    TweetResponseDto targetDto=tweetMapper.entityToDto(target);
+    ContextDto contextDto= new ContextDto();
+    contextDto.setTarget(targetDto);
+    contextDto.setBefore(beforeDto);
+    contextDto.setAfter(afterDto);
+    return contextDto;
+}
+public List<Tweet> afterTweets(Tweet target){
+    List<Tweet> aftertweets = new ArrayList<>();;
 
-        Optional<Tweet> optionalTweet = tweetRepository.findById(id);
-
-        if (!optionalTweet.isPresent() || optionalTweet.get().isDeleted()) {
-            throw new NotFoundException("Tweet not found");
+        for (Tweet tweet :target.getReplies()){
+            if(!tweet.isDeleted()){
+            aftertweets.add(tweet);}
+            aftertweets.addAll(afterTweets(tweet));
         }
 
-        try {
-            Tweet selectedTweet = optionalTweet.get();
-
-            // Get the before and after chains in chronological order
-            List<Tweet> beforeChain = getBeforeChain(selectedTweet);
-            List<Tweet> afterChain = getAfterChain(selectedTweet);
-
-            // Flatten the afterChain -> need to get nested replies
-            List<Tweet> flattenedAfterChain = flattenReplies(afterChain, selectedTweet);
-
-            // Map the chains to DTOs
-            List<TweetResponseDto> beforeDtoChain = tweetMapper.entitiesToDtos(beforeChain);
-            List<TweetResponseDto> afterDtoChain = tweetMapper.entitiesToDtos(flattenedAfterChain);
-
-            // Map the target tweet to DTO
-            TweetResponseDto targetDto = tweetMapper.entityToDto(selectedTweet);
-
-            // Create ContextDto setting target, before, and after
-            ContextDto contextDto = new ContextDto();
-            contextDto.setTarget(targetDto);
-            contextDto.setBefore(beforeDtoChain);
-            contextDto.setAfter(afterDtoChain);
-
-            return contextDto;
-        } catch (Exception e){
-            throw new NotFoundException(TWEET_NOT_FOUND_MSG + id);
-        }
-    }
 
 
-    @Override
-    public List<Tweet> getBeforeChain(Tweet tweet) {
-
-        List<Tweet> chain = new ArrayList<>();
-        getRepliesBeforeChain(tweet.getInReplyTo(), chain);
-        return chain.stream()
-                .sorted(Comparator.comparing(Tweet::getPosted))
-                .toList();
-    }
-
-    @Override
-    public List<Tweet> getAfterChain(Tweet tweet) {
-
-        List<Tweet> chain = new ArrayList<>();
-        getRepliesAfterChain(tweet.getInReplyTo(), chain);
-        return chain.stream()
-                .sorted(Comparator.comparing(Tweet::getPosted))
-                .toList();
-    }
-
-    @Override
-    public List<TweetResponseDto> getRepliesBeforeChain(Tweet tweet, List<Tweet> chain) {
-
-        if (tweet != null) {
-            if (chain == null) {
-                chain = new ArrayList<>();
-            }
-            chain.add(tweet);
-
-            Tweet previousTweet = tweet.getInReplyTo();
-            if (previousTweet != null) {
-                getRepliesBeforeChain(previousTweet, chain);
-            }
-        }
-        return tweetMapper.entitiesToDtos(chain);
-    }
-
-    @Override
-    public List<TweetResponseDto> getRepliesAfterChain(Tweet tweet, List<Tweet> chain) {
-
-        if (tweet != null) {
-            if (chain == null) {
-                chain = new ArrayList<>();
-            }
-            chain.addAll(tweet.getReplies());
-        }
-        return tweetMapper.entitiesToDtos(chain);
-    }
-
-    @Override
-    public List<Tweet> flattenReplies(List<Tweet> tweets, Tweet targetTweet) {
-
-        List<Tweet> flattenedList = new ArrayList<>();
-        for (Tweet tweet : tweets) {
-            if (!tweet.getId().equals(targetTweet.getId())) {
-                flattenedList.add(tweet);
-            }
-            flattenedList.addAll(flattenReplies(tweet.getReplies(), targetTweet));
-        }
-        return flattenedList;
-    }
+        return aftertweets.stream().sorted(Comparator.comparing(Tweet::getPosted).reversed()).collect(Collectors.toList());
+}
+//    @Override
+//    public ContextDto getContextByTweetId(Long id) {
+//
+//        Optional<Tweet> optionalTweet = tweetRepository.findById(id);
+//
+//        if (optionalTweet.isPresent()) {
+//            Tweet selectedTweet = optionalTweet.get();
+//
+//            // Get the before and after chains in chronological order
+//            List<Tweet> beforeChain = getBeforeChain(selectedTweet);
+//            List<Tweet> afterChain = getAfterChain(selectedTweet);
+//
+//            // Flatten the afterChain -> need to get nested replies
+//            List<Tweet> flattenedAfterChain = flattenReplies(afterChain, selectedTweet);
+//
+//            // Map the chains to DTOs
+//            List<TweetResponseDto> beforeDtoChain = tweetMapper.entitiesToDtos(beforeChain);
+//            List<TweetResponseDto> afterDtoChain = tweetMapper.entitiesToDtos(flattenedAfterChain);
+//
+//            // Map the target tweet to DTO
+//            TweetResponseDto targetDto = tweetMapper.entityToDto(selectedTweet);
+//
+//            // Create ContextDto setting target, before, and after
+//            ContextDto contextDto = new ContextDto();
+//            contextDto.setTarget(targetDto);
+//            contextDto.setBefore(beforeDtoChain);
+//            contextDto.setAfter(afterDtoChain);
+//
+//            return contextDto;
+//        } else {
+//            throw new NotFoundException(TWEET_NOT_FOUND_MSG + id);
+//        }
+//    }
+//
+//    @Override
+//    public List<Tweet> getBeforeChain(Tweet tweet) {
+//
+//        List<Tweet> chain = new ArrayList<>();
+//        getRepliesBeforeChain(tweet.getInReplyTo(), chain);
+//        return chain.stream()
+//                .sorted(Comparator.comparing(Tweet::getPosted))
+//                .toList();
+//    }
+//
+//    @Override
+//    public List<Tweet> getAfterChain(Tweet tweet) {
+//
+//        List<Tweet> chain = new ArrayList<>();
+//        getRepliesAfterChain(tweet.getInReplyTo(), chain);
+//        return chain.stream()
+//                .sorted(Comparator.comparing(Tweet::getPosted))
+//                .toList();
+//    }
+//
+//    @Override
+//    public List<TweetResponseDto> getRepliesBeforeChain(Tweet tweet, List<Tweet> chain) {
+//
+//        if (tweet != null) {
+//            if (chain == null) {
+//                chain = new ArrayList<>();
+//            }
+//            chain.add(tweet);
+//
+//            Tweet previousTweet = tweet.getInReplyTo();
+//            if (previousTweet != null) {
+//                getRepliesBeforeChain(previousTweet, chain);
+//            }
+//        }
+//        return tweetMapper.entitiesToDtos(chain);
+//    }
+//
+//    @Override
+//    public List<TweetResponseDto> getRepliesAfterChain(Tweet tweet, List<Tweet> chain) {
+//
+//        if (tweet != null) {
+//            if (chain == null) {
+//                chain = new ArrayList<>();
+//            }
+//            chain.addAll(tweet.getReplies());
+//        }
+//        return tweetMapper.entitiesToDtos(chain);
+//    }
+//
+//    @Override
+//    public List<Tweet> flattenReplies(List<Tweet> tweets, Tweet targetTweet) {
+//
+//        List<Tweet> flattenedList = new ArrayList<>();
+//        for (Tweet tweet : tweets) {
+//            if (!tweet.getId().equals(targetTweet.getId())) {
+//                flattenedList.add(tweet);
+//            }
+//            flattenedList.addAll(flattenReplies(tweet.getReplies(), targetTweet));
+//        }
+//        return flattenedList;
+//    }
 
     @Override
     public List<TweetResponseDto> getRepliesByTweetId(Long id) {
