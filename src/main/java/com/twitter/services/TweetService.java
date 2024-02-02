@@ -26,16 +26,16 @@ public interface TweetService {
     List<UserResponseDto> getLikesByTweetId(Long id);
 
     ContextDto getContextByTweetId(Long id);
+//
+//    List<Tweet> getBeforeChain(Tweet tweet);
+//
+//    List<Tweet> getAfterChain(Tweet tweet);
+//
+//    List<TweetResponseDto> getRepliesBeforeChain(Tweet tweet, List<Tweet> chain);
+//
+//    List<TweetResponseDto> getRepliesAfterChain(Tweet tweet, List<Tweet> chain);
 
-    List<Tweet> getBeforeChain(Tweet tweet);
-
-    List<Tweet> getAfterChain(Tweet tweet);
-
-    List<TweetResponseDto> getRepliesBeforeChain(Tweet tweet, List<Tweet> chain);
-
-    List<TweetResponseDto> getRepliesAfterChain(Tweet tweet, List<Tweet> chain);
-
-    List<Tweet> flattenReplies(List<Tweet> tweets, Tweet targetTweet);
+//    List<Tweet> flattenReplies(List<Tweet> tweets, Tweet targetTweet);
 
     List<TweetResponseDto> getRepliesByTweetId(Long id);
 
