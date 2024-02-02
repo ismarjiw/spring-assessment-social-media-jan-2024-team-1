@@ -59,9 +59,9 @@ public class TweetServiceImpl implements TweetService {
 
     @Override
     public TweetResponseDto createTweet(TweetRequestDto tweetRequestDto) {
-//        if (tweetRequestDto.getCredentials() == null || tweetRequestDto.getContent() == null) {
-//            throw new BadRequestException(BAD_REQUEST_MSG);
-//        }
+        if (tweetRequestDto.getCredentials() == null || tweetRequestDto.getContent() == null) {
+            throw new BadRequestException(BAD_REQUEST_MSG);
+        }
         Credentials credentials = credentialsMapper.dtoToEntity(tweetRequestDto.getCredentials());
         Optional<User> optionalUser = userRepository.findByCredentials(credentials);
 
@@ -237,6 +237,7 @@ public class TweetServiceImpl implements TweetService {
 
     @Override
     public TweetResponseDto repostTweetById(Long id, CredentialsDto credentialsDto) {
+
         Optional<Tweet> optionalTweet = tweetRepository.findById(id);
         Credentials credentials = credentialsMapper.dtoToEntity(credentialsDto);
         Optional<User> optionalUser = userRepository.findByCredentials(credentials);
@@ -252,12 +253,20 @@ public class TweetServiceImpl implements TweetService {
         try {
             User user = optionalUser.get();
             Tweet replyToTweet = optionalTweet.get();
+          if (user.getCreatedTweets().contains(replyToTweet)) {
+                throw new BadRequestException("User has already reposted this tweet");
+            }
             Tweet newTweetReplying = new Tweet();
+
 
             newTweetReplying.setAuthor(optionalUser.get());
             newTweetReplying.setRepostOf(replyToTweet);
 
             return tweetMapper.entityToDto(tweetRepository.saveAndFlush(newTweetReplying));
+
+            
+
+           
         } catch (Exception e) {
             throw new BadRequestException(BAD_REQUEST_MSG);
         }
@@ -307,6 +316,7 @@ public class TweetServiceImpl implements TweetService {
             throw new BadRequestException(BAD_REQUEST_MSG);
         }
     }
+
 @Override
 public ContextDto getContextByTweetId(Long id) {
     Optional<Tweet> optionalTweet = tweetRepository.findById(id);
