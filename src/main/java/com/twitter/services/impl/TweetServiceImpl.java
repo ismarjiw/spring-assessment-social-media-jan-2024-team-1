@@ -142,7 +142,7 @@ public class TweetServiceImpl implements TweetService {
         Credentials credentials = credentialsMapper.dtoToEntity(credentialsDto);
         Optional<User> optionalUser = userRepository.findByCredentials(credentials);
 
-        if (!tweetToDelete.isPresent()) {
+        if (!tweetToDelete.isPresent() || tweetToDelete.get().isDeleted()) {
             throw new NotFoundException("Tweet not found");
         }
 
@@ -210,7 +210,25 @@ public class TweetServiceImpl implements TweetService {
 
     @Override
     public TweetResponseDto replyToTweetById(Long id, TweetRequestDto tweetRequestDto) {
-        return null;
+
+        Credentials credentials = credentialsMapper.dtoToEntity(tweetRequestDto.getCredentials());
+        Optional<User> optionalUser = userRepository.findByCredentials(credentials);
+        if (!optionalUser.isPresent() || optionalUser.get().isDeleted()) {
+            throw new NotAuthorizedException("Not a authorized author");
+        }
+        Optional<Tweet> tweet = tweetRepository.findById(id);
+        if (!tweet.isPresent() || tweet.get().isDeleted()) {
+            throw new NotFoundException("Tweet does not exist with ID:" + id);
+        }
+        Tweet replyToTweet = tweet.get();
+        Tweet newTweetReplying = new Tweet();
+        if (tweetRequestDto.getContent() != null && !tweetRequestDto.getContent().isEmpty()) {
+            newTweetReplying.setContent(tweetRequestDto.getContent());
+        }
+        newTweetReplying.setAuthor(optionalUser.get());
+        newTweetReplying.setInReplyTo(replyToTweet);
+
+        return tweetMapper.entityToDto(tweetRepository.saveAndFlush(newTweetReplying));
     }
 
     @Override
