@@ -247,11 +247,13 @@ public class TweetServiceImpl implements TweetService {
 
         try {
             User user = optionalUser.get();
-            Tweet selectedTweet = optionalTweet.get();
+            Tweet replyToTweet = optionalTweet.get();
+            Tweet newTweetReplying = new Tweet();
 
-            user.getCreatedTweets().add(selectedTweet);
-            userRepository.saveAndFlush(user);
-            return tweetMapper.entityToDto(selectedTweet);
+            newTweetReplying.setAuthor(optionalUser.get());
+            newTweetReplying.setRepostOf(replyToTweet);
+
+            return tweetMapper.entityToDto(tweetRepository.saveAndFlush(newTweetReplying));
         } catch (Exception e) {
             throw new BadRequestException(BAD_REQUEST_MSG);
         }
