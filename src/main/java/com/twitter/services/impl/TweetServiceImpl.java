@@ -297,7 +297,11 @@ public class TweetServiceImpl implements TweetService {
 
         Optional<Tweet> optionalTweet = tweetRepository.findById(id);
 
-        if (optionalTweet.isPresent()) {
+        if (!optionalTweet.isPresent() || optionalTweet.get().isDeleted()) {
+            throw new NotFoundException("Tweet not found");
+        }
+
+        try {
             Tweet selectedTweet = optionalTweet.get();
 
             // Get the before and after chains in chronological order
@@ -321,10 +325,11 @@ public class TweetServiceImpl implements TweetService {
             contextDto.setAfter(afterDtoChain);
 
             return contextDto;
-        } else {
+        } catch (Exception e){
             throw new NotFoundException(TWEET_NOT_FOUND_MSG + id);
         }
     }
+
 
     @Override
     public List<Tweet> getBeforeChain(Tweet tweet) {
