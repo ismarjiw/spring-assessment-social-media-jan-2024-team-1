@@ -1,197 +1,39 @@
-Assessment 1
-===============================
+# 🐦 Twitter API
 
-## Overview
+## A Scalable and Robust Backend for a Twitter-like Application
 
-For this assessment, you are tasked with implementing a RESTful API using Spring Boot, JPA, and Postgresql. Specifically, you will be implementing an API that exposes operations for social media data that resembles the conceptual model of Twitter.
+<img src="https://i.imgur.com/BWV9P1B.png" alt="Twitter API Screenshot" width="600">
 
-You will implement this API from scratch, working from a series of endpoint specifications (found at the end of this document) to develop a mental model of the data. You will develop a suitable database schema and write Spring services and controllers to handle requests, perform validation and business logic, and to transform data between the API and database models.
+The Twitter API project is a RESTful Spring Boot application designed to emulate the backend infrastructure and functionality of a Twitter-like platform. With a focus on modularity, maintainability, and scalability, this project provides a solid foundation for building powerful social networking applications.
 
-## Testing the API
-Included in this skeleton are 2 json files required to run the test suite for this final project. To run the tests you will need postman's newman CLI. To install newman run the command `npm install -g newman`. Once newman is installed you need to navigate to the folder containing the Assessment 1 Test Suite & Assessment 1 environment json files. Once there you can run the command `newman run "Assessment 1 Test Suite.postman_collection.json" -e "Assessment 1.postman_environment.json"`. When all tests are passing successfully you will pass 330 assertions and should see something similar to the following in your terminal:
+### Key Features
 
-<img width="458" alt="successful_tests" src="https://user-images.githubusercontent.com/12191780/222555974-53992ad3-155c-4e77-9205-bc3b908e093c.png">
+- **🗣️ User Management:** Create, update, and manage user accounts, ensuring secure authentication and authorization.
+- **📢 Tweet Functionality:** Post, retrieve, and interact with tweets, including support for hashtags and mentions.
+- **👥 Following and Followers:** Enable users to follow and unfollow other users, facilitating social networking and content discovery.
+- **🔍 Search and Filtering:** Implement advanced search and filtering capabilities for tweets, hashtags, and users.
+- **📊 Analytics and Metrics:** Collect and analyze data to gain insights into user engagement, content performance, and platform usage.
 
+### Under the Hood
 
-## Reading these Requirements
+- **🛡️ Spring Boot:** Leveraged Spring Boot for building a robust and scalable RESTful backend.
+- **📐 Clean Architecture:** Implemented a modular design with separate layers for controllers, services, data transfer objects (DTOs), and mappers, ensuring maintainability and extensibility.
+- **📂 Spring Data JPA:** Utilized Spring Data JPA repositories for streamlined PostgreSQL database interactions and clean CRUD operations on User, Tweet, and Hashtag entities.
+- **⚠️ Custom Exception Handling:** Implemented customized exception classes for scenarios such as resource not found, bad requests, and unauthorized access, providing informative error responses.
+- **🧪 Extensive Testing:** Thoroughly tested the codebase with JUnit tests, ensuring comprehensive coverage of critical scenarios.
+- **🚀 API Validation:** Validated API endpoints using Postman and automated testing with Newman for end-to-end API testing.
 
-### RESTful Endpoint Methods and URLs
-Each endpoint you are required to implement is documented by the REST method and URL used to access it. For example, an endpoint used to access the list of dogs maintained by a server might be described like:
+### Getting Started
 
-`GET  dogs`
+To run the application locally, follow these steps:
 
-This tells us that the endpoint requires the `GET` HTTP method and is located at the `dogs` url, i.e. at `http://host:port/dogs`.
-
-#### URL Variables
-Some endpoints have variables in their urls, and these are represented by a variable name surrounded by curly braces. For example, an endpoint that returns a breed of dog by name might be described by the following syntax:
-
-`GET breeds/{breedName}`
-
-This tells us that the endpoint captures the path segment following `breeds/` with the variable `breedName`.
-
-Remember that the curly braces themselves are not part of the url, but anything outside of them is.
-
-#### Trailing Slashes
-The endpoint specifications never supply a trailing slash, but they are allowed. It is up to you to decide whether you prefer trailing slashes for API endpoint URLs or not, but whichever you choose, be consistent from endpoint to endpoint.
-
-### Types and Object Properties
-The syntax used to describe the request and response bodies for each required api endpoint is a variation of javascript's object literal syntax, in order to promote legibility, but the endpoints themselves should use JSON to represent data.
-
-Object literals are used to describe the shape of each data model, and property values are used to describe the property's data type. For example, a `Dog` data type might be described by the following syntax:
-```javascript
-{ // Dog
-  name: 'string',
-  age: 'integer'
-}
-```
-This tells us that a dog has two properties, `name` and `age`, and that they should be a `string` and `integer`, respectively.
-
-#### Optional properties
-Some properties are optional, meaning that they can be represented by `undefined` in javascript or `null` in java or sql. This is represented by giving a `?` suffix to the property name. For example, a `Dog` type like the one defined before could have an optional nickname, which might be described by the following syntax:
-```javascript
-{ // Dog
-  name: 'string',
-  nickname?: 'string',
-  age: 'integer'
-}
-```
-This tells us that a `Dog` has a property `nickname` that may be 'string' or may not be present at all.
-
-Any properties without a `?` suffix should be considered required.
-
-Keep in mind this is not valid javascript or JSON syntax, and that the `?` is not part of the property name.
-
-#### Built-in Types
-Some types, like `'string'` and '`integer`', mean exactly what you would expect them to - they refer to simple types common to both Java and JSON. Others, though, are less obvious, and some require different representations in Java, JSON, and SQL.
-
-To ensure consistency, here is a quick overview of some of the common types used in this specification.
-
-- `'string'` refers to a string of unicode characters, and can be represented by the `String` types in all relevant languages
-- `'integer'` refers to a 32-bit signed integer, and can be represented by the `number` type in JSON and the `Integer` type in Java.
-- `'timestamp'` refers to a UNIX timestamp, i.e. the number of milliseconds since the beginning of the UNIX epoch - January 1, 1970. In JSON, this should be represented as a number, specifically a `long`. On the server side, as well as in the database, this should be represented as an instance of `java.sql.Timestamp`.
-
-#### Custom Types
-Property types can also refer to types defined in this specification. For example, an owner for the `Dog` type defined above might be described by the following syntax:
-```javascript
-{ // Owner
-  dog: 'Dog'
-}
-```
-This tells us that an `Owner` has a property `dog` that is described by the `Dog` type, defined elsewhere in the specification.
-
-#### Anonymous Types
-Sometimes a type is never reused in the specification. In those cases, an object literal can be used to describe the type without naming it. For example, a `ChewToy` data type might be described by the following syntax:
-```javascript
-{ // ChewToy
-  material: 'string',
-  color: 'string',
-  dimensions: {
-    width: 'integer',
-    height: 'integer'
-  }
-}
-```
-Here we could have defined a `Dimensions` type with the following syntax:
-```javascript
-{ // Dimensions
-  width: 'integer',
-  height: 'integer'
-}
-```
-But if `ChewToy` is the only type that makes use of `Dimensions`, it's easier to define `Dimensions` as an anonymous type.
-
-#### Array Types
-If a property should be an array of a specific type of element, it is represented as an array literal with the element type as a string inside the array. For example, a kennel with a list of dogs might be described by the following syntax:
-```javascript
-{ // Kennel
-  dogs: ['Dog']
-}
-```
-This tells us that a `Kennel` has a property `dogs` that is an array of elements, the type of each of which is described by the `Dog` type
+1. Clone the repository: `git clone https://github.com/ismarjiw/spring-assessment-social-media-jan-2024-team-1.git`
+2. Set up the PostgreSQL database and configure the connection settings.
+3. Build and run the Spring Boot application.
+4. Use Postman or a similar tool to interact with the API endpoints.
 
 ## Entity Relationship Diagram
 ![Spring Assessment ERD](https://user-images.githubusercontent.com/12191780/187276918-ccb2d373-be3b-42ff-a74d-5560ba806a10.png)
-
-
-This ERD represents the database that students will create for this project. Students should only create three classes, `User`, `Tweet`, and `Hashtag`, annotated with `@Entity`. There are, however, two additional classes that students will need to create for this project: `Credentials` and `Profile`. These two classes will be annotated with `@Embeddable` and will be used inside of the `User` entity class with the `@Embedded` annotation. This allows us to maintain credentials and profile as seperate objects in Java while still being stored in just one table in the database.
-
-**IMPORTANT:** The `User` entity will also need to use an `@Table(name=<newName>)` annotation to give its table a different name as `user` is a reserved keyword in PostgreSQL.
-
-## API Data Types
-The semantics of the operations exposed by the API endpoints themselves are discussed in the following section, but in this section, the API data model is defined and the conceptual model for the application is explained in some depth. Additionally, some hints and constraints for the database model are discussed here.
-
-In general, the data types defined here are in their general, read-only forms. That means that these are the versions of the models that are returned by `GET` operations or nested inside other objects as auxiliary data. Most `POST` operations, which often create new records in the database, require specialized versions of these models. Those special cases are covered by the endpoint specifications themselves unless otherwise noted.
-
-### User
-A user of the application. The `username` must be unique. The `joined` timestamp should be assigned when the user is first created, and must never be updated.
-```javascript
-{ // User
-  username: 'string',
-  profile: 'Profile',
-  joined: 'timestamp'
-}
-```
-
-### Profile
-A user's profile information. Only the `email` property is required.
-```javascript
-{ // Profile
-  firstName?: 'string',
-  lastName?: 'string',
-  email: 'string',
-  phone?: 'string'
-}
-```
-
-### Credentials
-A user's credentials. These are mostly used for validation and authentication during operations specific to a user. Passwords are plain text for the sake of academic simplicity, and it should be kept in mind that this is never appropriate in the real world.
-```javascript
-{ // Credentials
-  username: 'string',
-  password: 'string'
-}
-```
-
-### Hashtag
-A hashtag associated with tweets that contain its label. The `label` property must be unique, but is case-insensitive. The `firstUsed` timestamp should be assigned on creation, and must never be updated. The `lastUsed` timestamp should be updated every time a new tweet is tagged with the hashtag.
-```javascript
-{ // Hashtag
-  label: 'string',
-  firstUsed: 'timestamp',
-  lastUsed: 'timestamp'
-}
-```
-
-## Tweet
-A tweet posted by a user. The `posted` timestamp should be assigned when the tweet is first created, and must not be updated.
-
-There are three distinct variations of tweets: simple, repost, and reply.
-- A simple tweet has a `content` value but no `inReplyTo` or `repostOf` values
-- A repost has a `repostOf` value but no `content` or `inReplyTo` values
-- A reply has `content` and `inReplyTo` values, but no `repostOf` value
-
-```javascript
-{ // Tweet
-  id: 'integer'
-  author: 'User',
-  posted: 'timestamp',
-  content?: 'string',
-  inReplyTo?: 'Tweet',
-  repostOf?: 'Tweet'
-}
-```
-
-### Context
-The reply context of a tweet. The `before` property represents the chain of replies that led to the `target` tweet, and the `after` property represents the chain of replies that followed the `target` tweet.
-
-The chains should be in chronological order, and the `after` chain should include all replies of replies, meaning that all branches of replies must be flattened into a single chronological list to fully satisfy the requirements.
-```javascript
-{ // Context
-  target: 'Tweet',
-  before: ['Tweet'],
-  after: ['Tweet']
-}
-```
 
 ## API Endpoints
 
@@ -273,7 +115,7 @@ Updates the profile of a user with the given username. If no such user exists, t
 ### `DELETE  users/@{username}`
 "Deletes" a user with the given username. If no such user exists or the provided credentials do not match the user, an error should be sent in lieu of a response. If a user is successfully "deleted", the response should contain the user data prior to deletion.
 
-**IMPORTANT:** This action should not actually drop any records from the database! Instead, develop a way to keep track of "deleted" users so that if a user is re-activated, all of their tweets and information are restored.
+**IMPORTANT:** This action does not actually drop any records from the database. 
 
 #### Request
 ```javascript
@@ -376,7 +218,7 @@ The response should contain the newly-created tweet.
 
 Because this always creates a simple tweet, it must have a `content` property and may not have `inReplyTo` or `repostOf` properties.
 
-**IMPORTANT:** when a tweet with `content` is created, the server must process the tweet's content for `@{username}` mentions and `#{hashtag}` tags. There is no way to create hashtags or create mentions from the API, so this must be handled automatically!
+**IMPORTANT:** when a tweet with `content` is created, the server must process the tweet's content for `@{username}` mentions and `#{hashtag}` tags. 
 
 #### Request
 ```javascript
@@ -402,7 +244,7 @@ Retrieves a tweet with a given id. If no such tweet exists, or the given tweet i
 ### `DELETE  tweets/{id}`
 "Deletes" the tweet with the given id. If no such tweet exists or the provided credentials do not match author of the tweet, an error should be sent in lieu of a response. If a tweet is successfully "deleted", the response should contain the tweet data prior to deletion.
 
-**IMPORTANT:** This action should not actually drop any records from the database! Instead, develop a way to keep track of "deleted" tweets so that even if a tweet is deleted, data with relationships to it (like replies and reposts) are still intact.
+**IMPORTANT:** This action does not actually drop any records from the database.
 
 #### Request
 ```javascript
@@ -429,7 +271,7 @@ Because this creates a reply tweet, content is not optional. Additionally, notic
 
 The response should contain the newly-created tweet.
 
-**IMPORTANT:** when a tweet with `content` is created, the server must process the tweet's content for `@{username}` mentions and `#{hashtag}` tags. There is no way to create hashtags or create mentions from the API, so this must be handled automatically!
+**IMPORTANT:** when a tweet with `content` is created, the server must process the tweet's content for `@{username}` mentions and `#{hashtag}` tags.
 
 #### Request
 ```javascript
@@ -463,8 +305,6 @@ The response should contain the newly-created tweet.
 
 ### `GET     tweets/{id}/tags`
 Retrieves the tags associated with the tweet with the given id. If that tweet is deleted or otherwise doesn't exist, an error should be sent in lieu of a response.
-
-**IMPORTANT** Remember that tags and mentions must be parsed by the server!
 
 #### Response
 ```javascript
@@ -515,8 +355,6 @@ Deleted reposts of the tweet should be excluded from the response.
 Retrieves the users mentioned in the tweet with the given id. If that tweet is deleted or otherwise doesn't exist, an error should be sent in lieu of a response.
 
 Deleted users should be excluded from the response.
-
-**IMPORTANT** Remember that tags and mentions must be parsed by the server!
 
 #### Response
 ```javascript
